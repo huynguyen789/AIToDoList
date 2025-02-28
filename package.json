@@ -1,31 +1,33 @@
 {
-  "name": "ai-todo-list",
+  "name": "priority-task-manager",
   "version": "0.1.0",
-  "description": "An intelligent to-do list application",
-  "main": "index.js",
+  "private": true,
   "scripts": {
-    "start": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/yourusername/AIToDoList.git"
-  },
-  "keywords": [
-    "ai",
-    "todo",
-    "productivity"
-  ],
-  "author": "",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/yourusername/AIToDoList/issues"
-  },
-  "homepage": "https://github.com/yourusername/AIToDoList#readme",
   "dependencies": {
-    "express": "^4.17.1"
+    "next": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "react-beautiful-dnd": "^13.1.1",
+    "uuid": "^9.0.1",
+    "date-fns": "^2.30.0",
+    "classnames": "^2.3.2"
   },
   "devDependencies": {
-    "nodemon": "^2.0.15"
+    "@types/node": "^20.8.0",
+    "@types/react": "^18.2.24",
+    "@types/react-dom": "^18.2.8",
+    "@types/react-beautiful-dnd": "^13.1.4",
+    "@types/uuid": "^9.0.4",
+    "typescript": "^5.2.2",
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.31",
+    "tailwindcss": "^3.3.3",
+    "eslint": "^8.50.0",
+    "eslint-config-next": "latest"
   }
 } 

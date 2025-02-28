@@ -1,45 +1,61 @@
-# AIToDoList
+# Priority Task Manager
 
-An intelligent to-do list application that helps you manage your tasks efficiently.
+A web-based task management application with a priority-based system that helps users organize tasks based on importance and urgency using the Eisenhower Matrix framework.
 
 ## Features
 
-- Task creation and management
-- Priority levels
-- Due dates
-- Categories/Tags
-- Smart task suggestions
-- Progress tracking
+- **Task Management**: Create, edit, delete, and mark tasks as complete
+- **Priority System**: Four-level priority system based on the Eisenhower Matrix
+  - Level 1: Urgent & Important (10 points)
+  - Level 2: Important but Not Urgent (7 points)
+  - Level 3: Urgent but Not Important (5 points)
+  - Level 4: Neither Urgent nor Important (2 points)
+- **Visual Distinction**: Each priority level has a distinct color for easy identification
+- **Filtering**: Filter tasks by status (all, active, completed)
+- **Responsive Design**: Works on desktop and mobile devices
+- **Local Storage**: Task data is stored locally in the browser
+
+## Tech Stack
+
+- **Next.js**: React framework for building the application
+- **TypeScript**: Type safety and better developer experience
+- **Tailwind CSS**: Utility-first CSS framework for styling
+- **react-beautiful-dnd**: Drag and drop functionality for task reordering
+- **localStorage API**: For persisting task data between sessions
 
 ## Getting Started
 
-### Prerequisites
+First, install the dependencies:
 
-- Node.js (v14 or higher)
-- npm or yarn
+```bash
+npm install
+# or
+yarn install
+```
 
-### Installation
+Then, run the development server:
 
-1. Clone the repository
-   ```
-   git clone https://github.com/yourusername/AIToDoList.git
-   ```
+```bash
+npm run dev
+# or
+yarn dev
+```
 
-2. Install dependencies
-   ```
-   cd AIToDoList
-   npm install
-   ```
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the application.
 
-3. Start the development server
-   ```
-   npm start
-   ```
+## Usage
 
-## Contributing
+1. **Adding Tasks**: Click the "Add Task" button and fill out the form
+2. **Managing Priority**: Use the priority dropdown on each task to change its priority level
+3. **Filtering Tasks**: Use the filter buttons (All, Active, Completed) to filter tasks
+4. **Completing Tasks**: Check the checkbox to mark a task as complete
+5. **Viewing Details**: Click "Details" to view the full task description
+6. **Deleting Tasks**: Click "Delete" to remove a task
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+## Future Enhancements
 
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details. 
+- Drag and drop between priority levels
+- Task editing functionality
+- Due date notifications
+- User accounts and cloud synchronization
+- Analytics and reporting on task completion 
