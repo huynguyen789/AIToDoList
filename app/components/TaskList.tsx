@@ -6,7 +6,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import { TaskFilter, PriorityLevel, Task as TaskType } from '../types';
 import { useTaskContext } from '../context/TaskContext';
@@ -61,6 +61,13 @@ const TaskList: React.FC = () => {
   const { filteredTasks, filter, setFilter, updateTaskPriority } = useTaskContext();
   const [isDragging, setIsDragging] = useState(false);
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
+  const [touchDevice, setTouchDevice] = useState(false);
+
+  // Detect touch devices on mount
+  useEffect(() => {
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    setTouchDevice(isTouchDevice);
+  }, []);
 
   const handleFilterChange = (newFilter: TaskFilter) => {
     setFilter(newFilter);
@@ -74,7 +81,7 @@ const TaskList: React.FC = () => {
     document.body.classList.add('is-dragging');
     
     // Hide the drag preview ghost image for mobile
-    if (window.navigator.userAgent.match(/Android|iPhone|iPad|iPod/i)) {
+    if (touchDevice) {
       const dragEl = document.querySelector(`[data-task-id="${result.draggableId}"]`);
       if (dragEl) {
         const style = window.getComputedStyle(dragEl);
@@ -86,6 +93,7 @@ const TaskList: React.FC = () => {
   };
 
   const onDragEnd = (result: DropResult) => {
+    // Clean up drag state
     setIsDragging(false);
     setDraggedTaskId(null);
     
@@ -114,8 +122,22 @@ const TaskList: React.FC = () => {
     
     console.log(`Moving task ${taskId} to priority ${newPriority}`);
     
-    // Update task priority using the context function
-    updateTaskPriority(taskId, newPriority);
+    try {
+      // Update task priority using the context function
+      updateTaskPriority(taskId, newPriority);
+      console.log('Task priority updated successfully');
+      
+      // Add a small delay to allow the UI to update
+      setTimeout(() => {
+        // Find the destination container and scroll it into view if needed
+        const destinationContainer = document.querySelector(`[data-priority="${destinationId}"]`);
+        if (destinationContainer) {
+          destinationContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }, 100);
+    } catch (error) {
+      console.error('Error updating task priority:', error);
+    }
   };
 
   // Group tasks by priority to display in separate sections

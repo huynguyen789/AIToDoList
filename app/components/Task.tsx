@@ -27,39 +27,46 @@ const Task: React.FC<TaskProps> = ({ task, dragging = false }) => {
   const priorityInfo = getPriorityInfo(task.priority);
   const priorityClass = getPriorityClassName(task.priority);
   
-  // Create a date object from the ISO string
-  // We need to maintain the exact date stored without timezone shifts
-  const deadlineDate = new Date(task.deadline);
+  // Handle deadline display logic
+  let deadlineMessage = "No deadline set";
+  let isDeadlinePast = false;
+  let isDeadlineToday = false;
   
-  // Get today's start and end for accurate comparison
-  const now = new Date();
-  const todayStart = startOfDay(now);
-  const todayEnd = endOfDay(now);
-  
-  // Check if deadline is in the past (before today)
-  const isDeadlinePast = deadlineDate < todayStart;
-  
-  // Check if deadline is today (between start and end of today)
-  const isDeadlineToday = deadlineDate >= todayStart && deadlineDate <= todayEnd;
-  
-  // Format the date for display
-  const formattedDate = format(deadlineDate, 'MMM d, yyyy');
-  
-  // Get relative time description
-  const formattedDeadline = formatDistance(
-    deadlineDate,
-    now,
-    { addSuffix: true }
-  );
-  
-  // Create a more descriptive deadline message
-  let deadlineMessage;
-  if (isDeadlinePast) {
-    deadlineMessage = `Overdue: ${formattedDeadline} (${formattedDate})`;
-  } else if (isDeadlineToday) {
-    deadlineMessage = `Due today (${formattedDeadline})`;
-  } else {
-    deadlineMessage = `Due: ${formattedDeadline} (${formattedDate})`;
+  // Only process deadline if it exists
+  if (task.deadline) {
+    // Create a date object from the ISO string
+    // We need to maintain the exact date stored without timezone shifts
+    const deadlineDate = new Date(task.deadline);
+    
+    // Get today's start and end for accurate comparison
+    const now = new Date();
+    const todayStart = startOfDay(now);
+    const todayEnd = endOfDay(now);
+    
+    // Check if deadline is in the past (before today)
+    isDeadlinePast = deadlineDate < todayStart;
+    
+    // Check if deadline is today (between start and end of today)
+    isDeadlineToday = deadlineDate >= todayStart && deadlineDate <= todayEnd;
+    
+    // Format the date for display
+    const formattedDate = format(deadlineDate, 'MMM d, yyyy');
+    
+    // Get relative time description
+    const formattedDeadline = formatDistance(
+      deadlineDate,
+      now,
+      { addSuffix: true }
+    );
+    
+    // Create a more descriptive deadline message
+    if (isDeadlinePast) {
+      deadlineMessage = `Overdue: ${formattedDeadline} (${formattedDate})`;
+    } else if (isDeadlineToday) {
+      deadlineMessage = `Due today (${formattedDeadline})`;
+    } else {
+      deadlineMessage = `Due: ${formattedDeadline} (${formattedDate})`;
+    }
   }
 
   const handleToggleComplete = (e: React.MouseEvent) => {
@@ -86,22 +93,33 @@ const Task: React.FC<TaskProps> = ({ task, dragging = false }) => {
   return (
     <>
       <div 
-        className={`bg-white dark:bg-gray-800 p-4 rounded-lg shadow border-l-4 transition-all ${
+        className={`bg-white dark:bg-gray-800 p-4 rounded-lg shadow border-l-4 transition-all relative ${
           task.completed ? 'opacity-60 border-gray-400' : `border-priority-${task.priority}`
-        } ${dragging ? 'ring-1 ring-blue-300 shadow-md' : 'hover:shadow-sm'}`}
+        } ${dragging ? 'ring-2 ring-blue-400 shadow-md' : 'hover:shadow-sm'}`}
       >
-        {/* Drag handle indicator */}
-        <div className="absolute top-2 right-2 cursor-grab opacity-40 hover:opacity-80 transition-opacity">
-          <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="8" cy="8" r="1" />
-            <circle cx="8" cy="16" r="1" />
-            <circle cx="16" cy="8" r="1" />
-            <circle cx="16" cy="16" r="1" />
-          </svg>
+        {/* Drag handle indicator - visible at all times with improved styling */}
+        <div className={`absolute top-2 right-2 cursor-grab transition-opacity ${
+          dragging ? 'opacity-0' : 'opacity-40 hover:opacity-100 group'
+        }`}>
+          <div className="p-1 rounded-md group-hover:bg-gray-100 dark:group-hover:bg-gray-700">
+            <svg className="w-5 h-5 text-gray-500 dark:text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="8" cy="8" r="1" />
+              <circle cx="8" cy="16" r="1" />
+              <circle cx="16" cy="8" r="1" />
+              <circle cx="16" cy="16" r="1" />
+            </svg>
+            <span className="sr-only">Drag to change priority</span>
+          </div>
         </div>
         
-        {/* Wrap content in inner div that handles click events */}
-        <div className="task-content cursor-pointer relative" onClick={handleEdit}>
+        {/* Task content */}
+        <div className="task-content" onClick={(e) => {
+          // Only handle click if not dragging
+          if (!dragging) {
+            e.stopPropagation();
+            handleEdit();
+          }
+        }}>
           <div className="flex items-start justify-between">
             <div className="flex items-start">
               <input

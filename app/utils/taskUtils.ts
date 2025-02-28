@@ -18,7 +18,19 @@ export const sortTasks = (tasks: Task[]): Task[] => {
     }
     
     // Then sort by deadline (earlier deadline first)
-    return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
+    // Tasks without deadlines should appear after tasks with deadlines
+    if (a.deadline && b.deadline) {
+      return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
+    } else if (a.deadline) {
+      // Task A has deadline, Task B doesn't - A comes first
+      return -1;
+    } else if (b.deadline) {
+      // Task B has deadline, Task A doesn't - B comes first
+      return 1;
+    } else {
+      // Neither has deadline - sort by creation date
+      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+    }
   });
 };
 

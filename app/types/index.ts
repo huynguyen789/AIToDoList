@@ -18,7 +18,7 @@ export interface Task {
   description: string;
   priority: PriorityLevel;
   completed: boolean;
-  deadline: string; // ISO date string
+  deadline?: string; // ISO date string, now optional
   createdAt: string; // ISO date string
 }
 

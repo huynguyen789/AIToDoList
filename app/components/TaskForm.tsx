@@ -34,9 +34,13 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, taskToEdit }) => {
       
       // Format the ISO date string to YYYY-MM-DD for the date input
       // Ensure we're using the local date, not UTC
-      const deadlineDate = new Date(taskToEdit.deadline);
-      const formattedDate = format(deadlineDate, 'yyyy-MM-dd');
-      setDeadline(formattedDate);
+      if (taskToEdit.deadline) {
+        const deadlineDate = new Date(taskToEdit.deadline);
+        const formattedDate = format(deadlineDate, 'yyyy-MM-dd');
+        setDeadline(formattedDate);
+      } else {
+        setDeadline('');
+      }
     }
   }, [taskToEdit]);
 
@@ -48,29 +52,32 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, taskToEdit }) => {
       return;
     }
     
-    if (!deadline) {
-      setError('Deadline is required');
-      return;
-    }
+    // Deadline is now optional - removing validation
     
-    // Parse the date string to ensure we preserve the exact date selected
-    // Format is 'yyyy-MM-dd' from the date input
-    const [year, month, day] = deadline.split('-').map(Number);
-    
-    // Create a date using the exact year, month, day components
-    // Note: JavaScript months are 0-indexed, so we subtract 1 from the month
-    const deadlineDate = new Date(year, month - 1, day);
-    
-    // Set to end of day (11:59:59 PM)
-    const endOfSelectedDay = endOfDay(deadlineDate);
-    
+    // Create a task data object
     const taskData = {
       title,
       description,
       priority,
-      deadline: endOfSelectedDay.toISOString(), // Store as ISO string with correct time
       completed: taskToEdit ? taskToEdit.completed : false,
     };
+
+    // Only add deadline if it's provided
+    if (deadline) {
+      // Parse the date string to ensure we preserve the exact date selected
+      // Format is 'yyyy-MM-dd' from the date input
+      const [year, month, day] = deadline.split('-').map(Number);
+      
+      // Create a date using the exact year, month, day components
+      // Note: JavaScript months are 0-indexed, so we subtract 1 from the month
+      const deadlineDate = new Date(year, month - 1, day);
+      
+      // Set to end of day (11:59:59 PM)
+      const endOfSelectedDay = endOfDay(deadlineDate);
+      
+      // Add deadline to taskData with proper TypeScript handling
+      (taskData as any).deadline = endOfSelectedDay.toISOString();
+    }
     
     if (taskToEdit) {
       // Update existing task
@@ -163,7 +170,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, taskToEdit }) => {
       
       <div className="mb-6">
         <label htmlFor="deadline" className="block text-gray-700 dark:text-gray-300 font-medium mb-2">
-          Deadline*
+          Deadline <span className="text-gray-500 dark:text-gray-400">(optional)</span>
         </label>
         <input
           type="date"
@@ -174,7 +181,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, taskToEdit }) => {
           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-          Deadline will be set to 11:59 PM on the selected date
+          {deadline ? "Deadline will be set to 11:59 PM on the selected date" : "No deadline will be set for this task"}
         </p>
       </div>
       

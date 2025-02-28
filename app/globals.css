@@ -19,7 +19,7 @@ body {
   min-height: 100vh;
 }
 
-/* Drag and drop styles - subtle version */
+/* Drag and drop styles */
 .is-dragging {
   cursor: grabbing !important;
 }
@@ -30,12 +30,13 @@ body {
 
 /* Disable text selection during dragging */
 .is-dragging .task-content {
-  user-select: none;
+  user-select: none !important;
+  pointer-events: none !important;
 }
 
 /* Make task cards subtle transition while dragging */
 .is-dragging [data-react-beautiful-dnd-draggable] {
-  transition: box-shadow 0.15s ease-in-out;
+  transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
 /* Subtle droppable area highlight animation */
@@ -52,4 +53,48 @@ body {
 /* Define scale-102 utility since it's not in Tailwind by default */
 .scale-102 {
   transform: scale(1.02);
+}
+
+/* Fix for react-beautiful-dnd */
+[data-rbd-draggable-context-id] {
+  user-select: none !important;
+}
+
+/* Ensure draggable items have proper z-index */
+[data-rbd-draggable-id] {
+  z-index: 1;
+}
+
+/* Ensure dragging item has higher z-index */
+[data-rbd-draggable-id][data-rbd-dragging="true"] {
+  z-index: 999 !important;
+}
+
+/* Improved drag handle visibility */
+.task-content:hover + .drag-handle,
+.drag-handle:hover {
+  opacity: 1 !important;
+}
+
+/* Improved drop target highlighting */
+[data-rbd-droppable-id].active-drop-target {
+  background-color: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.5);
+}
+
+/* Smooth transitions for drag and drop */
+[data-rbd-draggable-id] {
+  transition: transform 0.12s ease-in-out;
+}
+
+/* Touch device optimizations */
+@media (pointer: coarse) {
+  [data-rbd-draggable-id] {
+    touch-action: none;
+  }
+  
+  /* Make drag handles more prominent on touch devices */
+  .drag-handle {
+    opacity: 0.7 !important;
+  }
 } 

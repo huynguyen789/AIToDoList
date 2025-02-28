@@ -43,17 +43,22 @@ The Priority Task Manager implements drag and drop functionality to allow users 
      - Creates `Droppable` areas for each priority level.
      - Maps tasks to `Draggable` components.
      - Handles drag start and end events.
+     - Detects touch devices for optimized mobile experience.
+     - Provides visual feedback during dragging.
+     - Scrolls to the destination container after dropping.
 
    - **Task.tsx**: Represents the draggable item.
      - Includes visual indicators for when a task is being dragged.
      - Provides a drag handle icon for better usability.
+     - Enhances accessibility with screen reader support.
+     - Improves visual feedback during dragging.
 
 3. **Data Flow:**
 
    ```
    User drags a task → onDragStart fires → Visual feedback begins → 
    User drops the task → onDragEnd fires → Priority is updated in TaskContext → 
-   UI updates to reflect the new task arrangement
+   UI updates to reflect the new task arrangement → Container scrolls into view
    ```
 
 4. **Key Functions:**
@@ -69,6 +74,9 @@ The Priority Task Manager implements drag and drop functionality to allow users 
    - Clear instructions in the UI about the drag and drop functionality
    - Cursor changes to indicate dragging state
    - Touch-friendly implementation for mobile devices
+   - Improved drag handles with hover effects
+   - Automatic scrolling to destination after dropping
+   - Optimized for both mouse and touch interactions
 
 #### Code Example
 
@@ -97,7 +105,22 @@ const onDragEnd = (result: DropResult) => {
   // Update the task's priority
   const taskId = result.draggableId;
   const newPriority = parseInt(destinationId) as PriorityLevel;
-  updateTaskPriority(taskId, newPriority);
+  
+  try {
+    // Update task priority using the context function
+    updateTaskPriority(taskId, newPriority);
+    
+    // Add a small delay to allow the UI to update
+    setTimeout(() => {
+      // Find the destination container and scroll it into view if needed
+      const destinationContainer = document.querySelector(`[data-priority="${destinationId}"]`);
+      if (destinationContainer) {
+        destinationContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }, 100);
+  } catch (error) {
+    console.error('Error updating task priority:', error);
+  }
 };
 ```
 
@@ -117,6 +140,64 @@ The drag and drop experience is enhanced with subtle CSS transitions:
   50% { border-color: rgba(59, 130, 246, 0.4); }
   100% { border-color: rgba(59, 130, 246, 0.2); }
 }
+
+/* Touch device optimizations */
+@media (pointer: coarse) {
+  [data-rbd-draggable-id] {
+    touch-action: none;
+  }
+  
+  /* Make drag handles more prominent on touch devices */
+  .drag-handle {
+    opacity: 0.7 !important;
+  }
+}
+```
+
+### Optional Task Deadlines
+
+Tasks can be created with or without deadlines, providing flexibility for users to manage tasks that don't have specific time constraints.
+
+#### Implementation Details
+
+1. **Data Structure:**
+   - The `deadline` field in the Task interface is marked as optional with the `?` operator
+   - When no deadline is provided, the field is simply omitted from the task object
+
+2. **User Interface:**
+   - The deadline field in the task creation form is marked as optional
+   - A helper text indicates whether a deadline will be set
+   - The Task component displays "No deadline set" for tasks without deadlines
+
+3. **Task Sorting:**
+   - Tasks with deadlines are sorted before tasks without deadlines
+   - Within tasks that have no deadline, sorting falls back to creation date
+
+#### Code Example
+
+Handling optional deadlines in the sort function:
+
+```typescript
+export const sortTasks = (tasks: Task[]): Task[] => {
+  return [...tasks].sort((a, b) => {
+    // First sort by priority
+    if (a.priority !== b.priority) {
+      return a.priority - b.priority;
+    }
+    
+    // Then sort by deadline (tasks with deadlines come first)
+    if (a.deadline && b.deadline) {
+      return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
+    } else if (a.deadline) {
+      return -1; // Task A has a deadline, B doesn't
+    } else if (b.deadline) {
+      return 1;  // Task B has a deadline, A doesn't
+    } else {
+      // Neither has a deadline - sort by creation date
+      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+    }
+  });
+};
 ```
 
 ## Design Decisions
@@ -129,6 +210,10 @@ The drag and drop experience is enhanced with subtle CSS transitions:
 
 4. **Subtle Animations**: Used subtle animations to enhance the user experience without being distracting, particularly for the drag and drop functionality.
 
+5. **Optional Deadlines**: Made deadlines optional to support different types of tasks, while maintaining good sorting behavior through priority first, then deadline presence, then creation date.
+
+6. **Improved Drag and Drop Experience**: Enhanced the drag and drop functionality with better visual feedback, touch device detection, and automatic scrolling to improve usability across all devices.
+
 ## Known Issues
 
 None at present.
@@ -138,3 +223,4 @@ None at present.
 - Persist task order within each priority level
 - Add keyboard accessibility to the drag and drop functionality
 - Allow reordering tasks within the same priority level
+- Add recurring task support

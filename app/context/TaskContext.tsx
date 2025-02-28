@@ -101,11 +101,23 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Update task priority
   const updateTaskPriority = (id: string, priority: PriorityLevel) => {
-    setTasks(prevTasks =>
-      prevTasks.map(task =>
-        task.id === id ? { ...task, priority } : task
+    console.log(`TaskContext: Updating task ${id} to priority ${priority}`);
+    
+    // Find the task first to log it
+    const taskToUpdate = tasks.find(task => task.id === id);
+    console.log('Task before update:', taskToUpdate);
+    
+    // Simple implementation to avoid any potential issues
+    setTasks(prevTasks => 
+      prevTasks.map(task => 
+        task.id === id 
+          ? { ...task, priority } 
+          : task
       )
     );
+    
+    // Log that the update was requested
+    console.log(`Priority update for task ${id} requested`);
   };
 
   return (
