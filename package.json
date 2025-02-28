@@ -1,0 +1,31 @@
+{
+  "name": "ai-todo-list",
+  "version": "0.1.0",
+  "description": "An intelligent to-do list application",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yourusername/AIToDoList.git"
+  },
+  "keywords": [
+    "ai",
+    "todo",
+    "productivity"
+  ],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/yourusername/AIToDoList/issues"
+  },
+  "homepage": "https://github.com/yourusername/AIToDoList#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15"
+  }
+} 

@@ -1,0 +1,263 @@
+/* Base styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.6;
+  color: #333;
+  background-color: #f5f5f5;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+header h1 {
+  color: #2c3e50;
+  margin-bottom: 10px;
+}
+
+/* Form styles */
+.task-form {
+  background-color: white;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px;
+}
+
+.task-form h2 {
+  margin-bottom: 20px;
+  color: #2c3e50;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 600;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.form-group textarea {
+  height: 100px;
+  resize: vertical;
+}
+
+button {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: #2980b9;
+}
+
+/* Filter buttons */
+.task-filters {
+  margin-bottom: 20px;
+}
+
+.task-filters h2 {
+  margin-bottom: 15px;
+  color: #2c3e50;
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.filter-btn {
+  background-color: #ecf0f1;
+  color: #7f8c8d;
+}
+
+.filter-btn.active {
+  background-color: #3498db;
+  color: white;
+}
+
+/* Matrix styles */
+.matrix-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.matrix-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.matrix-quadrant {
+  background-color: white;
+  border-radius: 5px;
+  padding: 15px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  min-height: 200px;
+}
+
+.matrix-quadrant h4 {
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+/* Priority colors */
+#quadrant-1 {
+  border-top: 4px solid #e74c3c; /* Red for urgent & important */
+}
+
+#quadrant-2 {
+  border-top: 4px solid #3498db; /* Blue for important, not urgent */
+}
+
+#quadrant-3 {
+  border-top: 4px solid #f39c12; /* Orange for urgent, not important */
+}
+
+#quadrant-4 {
+  border-top: 4px solid #95a5a6; /* Gray for neither */
+}
+
+/* Task item styles */
+.task-item {
+  background-color: #f9f9f9;
+  border-radius: 4px;
+  padding: 12px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+}
+
+.task-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.task-item h3 {
+  margin-bottom: 5px;
+  font-size: 16px;
+}
+
+.task-item p {
+  color: #7f8c8d;
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+
+.task-item .deadline {
+  font-size: 12px;
+  color: #e74c3c;
+}
+
+.task-item.completed {
+  opacity: 0.7;
+}
+
+.task-item.completed h3 {
+  text-decoration: line-through;
+}
+
+.task-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.task-actions button {
+  padding: 5px 10px;
+  font-size: 12px;
+}
+
+.delete-btn {
+  background-color: #e74c3c;
+}
+
+.delete-btn:hover {
+  background-color: #c0392b;
+}
+
+.complete-btn {
+  background-color: #2ecc71;
+}
+
+.complete-btn:hover {
+  background-color: #27ae60;
+}
+
+/* Drag and drop styles */
+.task-item.dragging {
+  opacity: 0.5;
+}
+
+.task-list.drag-over {
+  background-color: rgba(52, 152, 219, 0.1);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .matrix-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Notification styles */
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 15px 20px;
+  border-radius: 4px;
+  color: white;
+  font-weight: bold;
+  z-index: 1000;
+  display: none;
+  animation: fadeIn 0.3s;
+}
+
+.notification.success {
+  background-color: #2ecc71;
+}
+
+.notification.error {
+  background-color: #e74c3c;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+} 
