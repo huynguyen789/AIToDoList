@@ -21,5 +21,13 @@ Create a web-based task management application with a priority-based system that
   * Level 3: Urgent but Not Important (Score: 5 points)
   * Level 4: Neither Urgent nor Important (Score: 2 points)
 * Visual distinction between priority levels
-* Ability to change priority level via drag-and-drop
+* ~~Ability to change priority level via drag-and-drop~~ (Completed)
 * Default sorting by priority level
+
+## Implementation Notes
+
+### Drag and Drop Feature
+- Successfully implemented drag and drop functionality to move tasks between priority levels
+- Enhanced the visual experience with CSS transitions and animations for a more intuitive UX
+- Added mobile-friendly touch interactions
+- Tasks now clearly indicate they are draggable with a drag handle icon

@@ -4,11 +4,52 @@
 
 :root {
   --foreground-rgb: 0, 0, 0;
-  --background-rgb: 255, 255, 255;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+}
+
+.dark {
+  --foreground-rgb: 255, 255, 255;
+  --background-rgb: 0, 0, 0;
 }
 
 body {
   color: rgb(var(--foreground-rgb));
   background: rgb(var(--background-rgb));
   min-height: 100vh;
+}
+
+/* Drag and drop styles - subtle version */
+.is-dragging {
+  cursor: grabbing !important;
+}
+
+.is-dragging * {
+  cursor: grabbing !important;
+}
+
+/* Disable text selection during dragging */
+.is-dragging .task-content {
+  user-select: none;
+}
+
+/* Make task cards subtle transition while dragging */
+.is-dragging [data-react-beautiful-dnd-draggable] {
+  transition: box-shadow 0.15s ease-in-out;
+}
+
+/* Subtle droppable area highlight animation */
+@keyframes subtle-pulse-border {
+  0% { border-color: rgba(59, 130, 246, 0.2); }
+  50% { border-color: rgba(59, 130, 246, 0.4); }
+  100% { border-color: rgba(59, 130, 246, 0.2); }
+}
+
+.is-dragging [data-react-beautiful-dnd-droppable]:not([data-react-beautiful-dnd-droppable="0"]) {
+  animation: subtle-pulse-border 2s infinite;
+}
+
+/* Define scale-102 utility since it's not in Tailwind by default */
+.scale-102 {
+  transform: scale(1.02);
 } 

@@ -88,10 +88,20 @@ const Task: React.FC<TaskProps> = ({ task, dragging = false }) => {
       <div 
         className={`bg-white dark:bg-gray-800 p-4 rounded-lg shadow border-l-4 transition-all ${
           task.completed ? 'opacity-60 border-gray-400' : `border-priority-${task.priority}`
-        } ${dragging ? 'ring-2 ring-blue-500 shadow-lg' : ''}`}
+        } ${dragging ? 'ring-1 ring-blue-300 shadow-md' : 'hover:shadow-sm'}`}
       >
+        {/* Drag handle indicator */}
+        <div className="absolute top-2 right-2 cursor-grab opacity-40 hover:opacity-80 transition-opacity">
+          <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="8" cy="8" r="1" />
+            <circle cx="8" cy="16" r="1" />
+            <circle cx="16" cy="8" r="1" />
+            <circle cx="16" cy="16" r="1" />
+          </svg>
+        </div>
+        
         {/* Wrap content in inner div that handles click events */}
-        <div className="task-content cursor-pointer" onClick={handleEdit}>
+        <div className="task-content cursor-pointer relative" onClick={handleEdit}>
           <div className="flex items-start justify-between">
             <div className="flex items-start">
               <input
@@ -148,8 +158,8 @@ const Task: React.FC<TaskProps> = ({ task, dragging = false }) => {
 
           {/* Priority indicator for drag-and-drop context */}
           {dragging && (
-            <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 italic text-center">
-              Drag to a different priority level to change
+            <div className="mt-2 py-1 px-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 rounded text-xs">
+              Drop in a different priority level to change
             </div>
           )}
         </div>

@@ -60,17 +60,38 @@ const FilterTabs: React.FC<{
 const TaskList: React.FC = () => {
   const { filteredTasks, filter, setFilter, updateTaskPriority } = useTaskContext();
   const [isDragging, setIsDragging] = useState(false);
+  const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
 
   const handleFilterChange = (newFilter: TaskFilter) => {
     setFilter(newFilter);
   };
 
-  const onDragStart = () => {
+  const onDragStart = (result: any) => {
     setIsDragging(true);
+    setDraggedTaskId(result.draggableId);
+    
+    // Add a dragging class to the body for global styling
+    document.body.classList.add('is-dragging');
+    
+    // Hide the drag preview ghost image for mobile
+    if (window.navigator.userAgent.match(/Android|iPhone|iPad|iPod/i)) {
+      const dragEl = document.querySelector(`[data-task-id="${result.draggableId}"]`);
+      if (dragEl) {
+        const style = window.getComputedStyle(dragEl);
+        if (style.transform) {
+          (dragEl as HTMLElement).style.transform = style.transform;
+        }
+      }
+    }
   };
 
   const onDragEnd = (result: DropResult) => {
     setIsDragging(false);
+    setDraggedTaskId(null);
+    
+    // Remove the dragging class from the body
+    document.body.classList.remove('is-dragging');
+    
     console.log('Drag ended:', result);
     
     // If dropped outside a valid droppable area, do nothing
@@ -134,6 +155,13 @@ const TaskList: React.FC = () => {
     ? "Release to drop the task in a new priority level" 
     : "Drag tasks to change their priority level";
 
+  const getDraggedTask = (taskId: string | null) => {
+    if (!taskId) return null;
+    return filteredTasks.find(task => task.id === taskId);
+  };
+
+  const draggedTask = getDraggedTask(draggedTaskId);
+
   return (
     <div className="mt-6">
       <FilterTabs currentFilter={filter} onFilterChange={handleFilterChange} />
@@ -144,61 +172,102 @@ const TaskList: React.FC = () => {
         </div>
       ) : (
         <>
-          <div className="text-center text-sm text-gray-500 dark:text-gray-400 mb-4 bg-gray-100 dark:bg-gray-700 p-2 rounded-lg">
+          <div className={`text-center text-sm p-2 rounded-lg transition-colors ${
+            isDragging 
+              ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300'
+              : 'bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
+          }`}>
             <p>{dragInstructions}</p>
+            {isDragging && draggedTask && (
+              <p className="mt-1 text-xs">
+                Moving: {draggedTask.title}
+              </p>
+            )}
           </div>
           
           <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-              {Object.entries(tasksByPriority).map(([priority, tasks]) => (
-                <div key={priority} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
-                  <h2 className={`text-center mb-3 p-2 rounded-lg text-white ${priorityColors[priority as unknown as PriorityLevel]}`}>
-                    {priorityLabels[priority as unknown as PriorityLevel]} ({tasks.length})
-                  </h2>
-                  
-                  <Droppable droppableId={priority}>
-                    {(provided, snapshot) => (
-                      <div
-                        {...provided.droppableProps}
-                        ref={provided.innerRef}
-                        className={`space-y-2 min-h-[100px] p-3 border-2 border-dashed rounded-lg transition-colors ${
-                          snapshot.isDraggingOver 
-                            ? 'bg-gray-100 dark:bg-gray-700 border-blue-500'
-                            : 'border-gray-200 dark:border-gray-700'
-                        }`}
-                        data-priority={priority}
-                      >
-                        {tasks.map((task, index) => (
-                          <Draggable 
-                            key={task.id} 
-                            draggableId={task.id} 
-                            index={index}
+              {Object.entries(tasksByPriority).map(([priority, tasks]) => {
+                const priorityNum = parseInt(priority) as PriorityLevel;
+                const isDraggedOverSection = isDragging && draggedTask && draggedTask.priority !== priorityNum;
+                
+                return (
+                  <div key={priority} className={`transition-transform duration-200 ${
+                    isDragging && draggedTask && draggedTask.priority === priorityNum
+                      ? 'opacity-90'
+                      : isDragging && isDraggedOverSection
+                        ? 'transform scale-102'
+                        : ''
+                  }`}>
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
+                      <h2 className={`text-center mb-3 p-2 rounded-lg text-white ${priorityColors[priorityNum]}`}>
+                        {priorityLabels[priorityNum]} ({tasks.length})
+                      </h2>
+                      
+                      <Droppable droppableId={priority}>
+                        {(provided, snapshot) => (
+                          <div
+                            {...provided.droppableProps}
+                            ref={provided.innerRef}
+                            className={`space-y-2 min-h-[120px] p-3 border-2 border-dashed rounded-lg transition-all ${
+                              snapshot.isDraggingOver 
+                                ? `bg-${priorityColors[priorityNum].split('-')[1]}-50 dark:bg-gray-700 border-${priorityColors[priorityNum].split('-')[1]}-400`
+                                : isDragging && isDraggedOverSection
+                                  ? 'bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600'
+                                  : 'border-gray-200 dark:border-gray-700'
+                            }`}
+                            data-priority={priority}
+                            style={{
+                              transition: 'all 0.15s ease'
+                            }}
                           >
-                            {(provided, snapshot) => (
-                              <div
-                                ref={provided.innerRef}
-                                {...provided.draggableProps}
-                                {...provided.dragHandleProps}
-                                className={`touch-manipulation transition-opacity ${
-                                  snapshot.isDragging ? 'opacity-70 shadow-lg' : ''
-                                }`}
-                                data-task-id={task.id}
-                                style={{
-                                  ...provided.draggableProps.style,
-                                  marginBottom: snapshot.isDragging ? 0 : '8px'
-                                }}
+                            {tasks.map((task, index) => (
+                              <Draggable 
+                                key={task.id} 
+                                draggableId={task.id} 
+                                index={index}
                               >
-                                <Task task={task} dragging={snapshot.isDragging} />
+                                {(provided, snapshot) => (
+                                  <div
+                                    ref={provided.innerRef}
+                                    {...provided.draggableProps}
+                                    {...provided.dragHandleProps}
+                                    className={`touch-manipulation transition-all duration-150 ${
+                                      snapshot.isDragging 
+                                        ? 'opacity-90 shadow-md' 
+                                        : 'hover:shadow-sm'
+                                    }`}
+                                    data-task-id={task.id}
+                                    style={{
+                                      ...provided.draggableProps.style,
+                                      marginBottom: snapshot.isDragging ? 0 : '8px'
+                                    }}
+                                  >
+                                    <Task task={task} dragging={snapshot.isDragging} />
+                                  </div>
+                                )}
+                              </Draggable>
+                            ))}
+                            {provided.placeholder}
+                            
+                            {tasks.length === 0 && !snapshot.isDraggingOver && (
+                              <div className="text-center p-4 text-gray-400 dark:text-gray-500 text-sm italic">
+                                No tasks in this priority level
                               </div>
                             )}
-                          </Draggable>
-                        ))}
-                        {provided.placeholder}
-                      </div>
-                    )}
-                  </Droppable>
-                </div>
-              ))}
+                            
+                            {isDragging && !snapshot.isDraggingOver && (
+                              <div className="text-center p-1 text-xs text-blue-400 dark:text-blue-400">
+                                Drop here for {priorityLabels[priorityNum].split(' (')[0]}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </Droppable>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </DragDropContext>
         </>
