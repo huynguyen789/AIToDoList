@@ -9,6 +9,34 @@ Todo:
 * [X] Add time deadline on the task
 * [X] The change pirority: it's a big long and not nice. Think of some way to make it nicely and shorter.
 
+Core:
+
+* [ ] AI auto set priority ***
+
+  * [ ] 1 most important long term goal
+  * [ ] 3-5 most important goals this year
+* [ ] Score tracking system: day week month year
+
+  * [ ] Visual
+* [ ] Reward system
+
+  * [ ] Visual
+* [ ] Leader board
+
+  * [ ] Visual
+
+Nice to have:
+
+
+
+**Additional Feature Ideas**
+
+* Time blocking integration to help users allocate focused time
+* Habit formation elements for recurring tasks
+* Weekly/monthly review prompts to help users reflect on productivity
+* Optional integration with calendar systems
+
+
 ## Features
 
 ### Basic Task Management
