@@ -1,47 +1,78 @@
-# Priority Task Manager App - Developer Guide
+# AI Todo List Web App - Project Plan
 
-## Project Overview
+## Overview
 
-Create a web-based task management application with a priority-based system that helps users organize tasks based on importance and urgency. This MVP focuses on core functionality while providing a foundation for future enhancements.
+A modern todo list application with AI features, priority management based on the Eisenhower Matrix, and score tracking.
 
-## Core MVP Features
+Todo:
 
-### 1. Basic Task Management
+* Add time deadline on the task
 
-* Task creation with title, description, deadline
-* Task editing and deletion
-* Task completion tracking
-* Task filtering (all, active, completed)
+The change pirority: it's a big long and not nice. Think of some way to make it nicely and shorter.
 
-### 2. Four-Level Priority System
+## Features
 
-* Implementation of the Eisenhower Matrix framework:
-  * Level 1: Urgent & Important (Score: 10 points)
-  * Level 2: Important but Not Urgent (Score: 7 points)
-  * Level 3: Urgent but Not Important (Score: 5 points)
-  * Level 4: Neither Urgent nor Important (Score: 2 points)
-* Visual distinction between priority levels
-* Ability to change priority level via drag-and-drop
-* Default sorting by priority level
+### Basic Task Management
 
-To do:
+- [X] Task creation with title (required), description (optional), deadline (optional)
+- [X] Task editing functionality
+- [X] Task deletion functionality
+- [X] Task completion tracking
+- [X] Task filtering (all, active, completed)
+- [X] Score tracking for tasks
 
-* [X] Fix drag and drop bug
-* [X] Make deadline optional when creating task
+### Four-Level Priority System (Eisenhower Matrix)
 
-## Implementation Notes
+- [X] Level 1: Urgent & Important (Score: 10 points)
+- [X] Level 2: Important but Not Urgent (Score: 7 points)
+- [X] Level 3: Urgent but Not Important (Score: 5 points)
+- [X] Level 4: Neither Urgent nor Important (Score: 2 points)
 
-### Drag and Drop Feature
+### Task Organization
 
-- Successfully implemented drag and drop functionality to move tasks between priority levels
-- Enhanced the visual experience with CSS transitions and animations for a more intuitive UX
-- Added mobile-friendly touch interactions
-- Tasks now clearly indicate they are draggable with a drag handle icon
-- Fixed bug with drag and drop functionality to ensure tasks can be properly moved between priority levels
+- [X] Move tasks between priority levels
+- [X] Reorder tasks within each priority level (up/down)
 
-### Optional Deadline Feature
+### UI/UX
 
-- Made the deadline field optional when creating or editing tasks
-- Updated the UI to clearly indicate that deadline is optional
-- Added proper handling for tasks without deadlines in the display
-- Implemented smart sorting that prioritizes tasks with deadlines over those without
+- [X] Responsive design
+- [X] Dark mode support
+- [X] Intuitive user interface
+
+## Technical Stack
+
+- Next.js (React framework)
+- TypeScript
+- Tailwind CSS for styling
+- Local storage for data persistence (initial version)
+
+## Implementation Phases
+
+### Phase 1: Project Setup
+
+- [X] Initialize Next.js project with TypeScript
+- [X] Set up Tailwind CSS
+- [X] Create basic project structure
+- [X] Set up document.md for architecture documentation
+
+### Phase 2: Core Functionality
+
+- [X] Implement task data model
+- [X] Create task creation interface
+- [X] Implement task editing and deletion
+- [X] Add task completion functionality
+- [X] Implement priority system
+
+### Phase 3: Advanced Features
+
+- [X] Add task filtering
+- [X] Implement score tracking
+- [X] Add task reordering within priority levels
+- [X] Implement moving tasks between priority levels
+
+### Phase 4: UI Enhancements
+
+- [X] Implement dark mode
+- [X] Polish UI/UX
+- [X] Add responsive design improvements
+- [X] Final testing and bug fixes
