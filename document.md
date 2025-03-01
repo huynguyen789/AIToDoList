@@ -95,6 +95,13 @@ src/
    - Fixed duplicate heading issue by reorganizing the layout
    - Made the Eisenhower Matrix use full screen width for better visibility
    - Improved visual consistency across components
+7. **Fixed Filter Issue with Eisenhower Matrix**
+
+   - Fixed issue where tasks were not appearing in the Eisenhower Matrix
+   - Problem: The filter was set to "Completed" but there were no completed tasks
+   - Solution: Added auto-reset functionality to change filter to "All" when no completed tasks exist
+   - Added detailed logging in TaskMatrix component to track task distribution by priority
+   - Improved filter state management to ensure newly added tasks are visible
 
 ## Known Issues
 

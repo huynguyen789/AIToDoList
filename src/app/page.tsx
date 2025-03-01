@@ -5,7 +5,7 @@
 
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Header } from '../components/Header';
 import { TaskInput } from '../components/TaskInput';
 import { FilterBar } from '../components/FilterBar';
@@ -15,6 +15,7 @@ import { TasksProvider } from '../context/TasksContext';
 import { ThemeProvider } from '../context/ThemeContext';
 import { AuthProvider } from '../context/AuthContext';
 import { useTaskOperations } from '../hooks/useTaskOperations';
+import { FilterOption } from '../types';
 
 /**
  * App content component
@@ -23,7 +24,18 @@ import { useTaskOperations } from '../hooks/useTaskOperations';
  * Output: Main app UI
  */
 const AppContent = () => {
-  const { tasks, filter, activeTodoList } = useTaskOperations();
+  const { tasks, filter, activeTodoList, setFilter } = useTaskOperations();
+  
+  // Reset filter to "All" if it's set to "Completed" and there are no completed tasks
+  useEffect(() => {
+    if (filter === FilterOption.Completed && activeTodoList) {
+      const hasCompletedTasks = activeTodoList.tasks.some(task => task.completed);
+      if (!hasCompletedTasks) {
+        console.log('No completed tasks found, resetting filter to All');
+        setFilter(FilterOption.All);
+      }
+    }
+  }, [filter, activeTodoList, setFilter]);
   
   return (
     <div className="container mx-auto px-4 py-8">

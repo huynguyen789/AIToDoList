@@ -187,21 +187,23 @@ export const useTaskOperations = () => {
     });
   };
   
-  // Get tasks from active todo list
+  // Get active todo list and its tasks
   const activeTodoList = getActiveTodoList();
-  const tasks = activeTodoList ? activeTodoList.tasks : [];
+  
+  // Get filtered tasks from active todo list
+  const filteredTasks = activeTodoList?.tasks.filter(task => {
+    if (state.filter === FilterOption.Active) return !task.completed;
+    if (state.filter === FilterOption.Completed) return task.completed;
+    return true;
+  }) || [];
   
   return {
     // State
-    tasks: getActiveTodoList()?.tasks.filter(task => {
-      if (state.filter === FilterOption.Active) return !task.completed;
-      if (state.filter === FilterOption.Completed) return task.completed;
-      return true;
-    }) || [],
+    tasks: filteredTasks,
     filter: state.filter,
     totalScore: state.totalScore,
     todoLists: state.todoLists,
-    activeTodoList: getActiveTodoList(),
+    activeTodoList: activeTodoList,
     loading: state.loading,
     
     // Methods
