@@ -1,133 +1,101 @@
-# AI Todo List Web App - Documentation
+# AI Todo List Web App
 
-## Project Architecture
-
-### Directory Structure
+## Architecture
 
 ```
 src/
-├── app/             # Next.js app router
-├── components/      # React components
-├── context/         # React context providers
-├── hooks/           # Custom React hooks
-├── lib/             # Utility functions
-└── types/           # TypeScript type definitions
+├── app/        # Next.js app router
+├── components/ # React components
+├── context/    # Context providers
+├── hooks/      # Custom hooks
+├── lib/        # Utilities
+└── types/      # TypeScript types
 ```
 
-### Logic Map
+## Data Flow
+- User interactions → Component events → Hooks → Context actions → State updates → Re-renders
+- **State**: TasksContext (tasks), ThemeContext (dark/light mode)
+- **Persistence**: Local storage + Firebase (when logged in)
 
-1. **Data Flow**
-   - User interactions trigger component events
-   - Components call hook methods
-   - Hooks dispatch actions to context
-   - Context updates state
-   - State changes trigger re-renders
-
-2. **State Management**
-   - TasksContext: Manages tasks state
-   - ThemeContext: Manages dark/light mode
-
-3. **Data Persistence**
-   - Local storage for tasks and preferences
-
-## Components
-
-### Core Components
-
-- **TaskInput**: Form for creating new tasks
-- **Task**: Individual task display and actions
-- **TaskList**: Renders list of tasks
-- **TaskMatrix**: Organizes tasks by priority
-- **FilterBar**: Controls for filtering tasks
-- **TodoListSelector**: Interface for managing multiple to-do lists
+## Key Components
+- **TaskInput**: Create new tasks
+- **Task**: Display individual task with actions
+- **TaskList**: Render tasks list
+- **TaskMatrix**: Organize by priority
+- **FilterBar**: Task filtering
+- **TodoListSelector**: Manage multiple lists
 - **Header**: App header with theme toggle
 
-## Features
+## Core Features
+1. **Task Management**
+   - CRUD operations for tasks
+   - Priority system (Eisenhower Matrix)
+   - Deadlines with date/time
+   - Task reordering
 
-### Task Management
+2. **Multiple Lists**
+   - Create/switch/rename/delete lists
+   - Each list has independent tasks
 
-- Create, edit, delete tasks
-- Mark tasks as complete/incomplete
-- Set task priority using Eisenhower Matrix
-- Add deadline date and time
-- Reorder tasks within priority levels
+3. **Priority System**
+   - Four levels based on Eisenhower Matrix
+   - Point scoring for completed tasks
+   - Compact display (U+I, I, U, Low)
 
-### Multiple To-Do Lists
-
-- Create separate to-do lists for different purposes
-- Switch between lists
-- Rename and delete lists
-- Each list maintains its own set of tasks
-
-### Priority System
-
-- Four-level priority system based on Eisenhower Matrix
-- Each priority level has a score value
-- Completed tasks contribute to total score
-- Compact priority display using short labels (U+I, I, U, Low) in task list
-- Full priority labels in task creation/editing for better user understanding
+4. **Firebase Integration**
+   - Authentication (email/password)
+   - Firestore data persistence
+   - Local-to-cloud migration
 
 ## Design Decisions
-
-1. **Priority Selection UI**
-   - Different approaches for different contexts:
-     - Task creation/editing: Full priority labels with short codes and points for clarity
-     - Task display: Compact labels for space efficiency
-   - Improved visual distinction between selected/unselected priorities
-   - Vertical layout for priority selection in forms for better readability
-
-2. **Deadline Implementation**
-   - Added separate date and time inputs
-   - Combined display format: "Date at Time"
-   - Made both optional for flexibility
-
-3. **UI Layout**
-   - TodoListSelector at the top for easy access to different lists
-   - FilterBar on the left side for filtering tasks
-   - Main content area shows the active to-do list's tasks organized by priority
+- Different priority UIs for creation vs. display
+- Separate date/time inputs for deadlines
+- Intuitive layout with list selector at top
 
 ## Recent Changes
 
 1. **Added Time Deadline Feature**
+
    - Extended Task interface with deadlineTime field
    - Updated TaskInput component with time input
    - Modified Task component to display and edit time
    - Added formatDeadline utility function
-
 2. **Improved Priority Selection UI**
+
    - Created ShortPriorityLabels for compact display in task list
    - Used full priority labels in task creation/editing forms
    - Replaced dropdown with button grid
    - Added visual styling for better UX
    - Implemented in both creation and editing interfaces
-
 3. **Added Multiple To-Do Lists Feature**
+
    - Created TodoList interface to represent separate to-do lists
    - Updated TasksState to manage multiple to-do lists
    - Created TodoListSelector component for creating, selecting, and deleting to-do lists
    - Modified TasksContext to handle operations on multiple to-do lists
    - Added migration utility to convert existing tasks to the new format
    - Updated UI to display the active to-do list and its tasks
+4. **Reorganized UI Layout**
 
-4. **Removed Category Feature**
-   - Simplified the data model by removing TaskCategory enum and related fields
-   - Removed CategorySelector component
-   - Updated task creation and filtering to no longer use categories
-   - Streamlined the UI by focusing on to-do lists instead of categories
-
-5. **Reorganized UI Layout**
    - Moved TodoListSelector to the top for better visibility
    - Simplified the layout to make it more intuitive
    - Improved the flow from selecting a list to working with tasks
+5. **Added Firebase Integration**
 
-6. **Added Firebase Integration**
    - Implemented Firebase authentication (email/password)
    - Added login and registration UI
    - Created Firestore database integration for data persistence
    - Updated storage utilities to use Firestore when user is logged in
    - Added data migration from local storage to Firestore
    - Implemented loading states for better UX during data operations
+6. **Enhanced UI with Tooltips and Visual Improvements**
+
+   - Added tooltips to explain the Eisenhower Matrix, score system, and filters
+   - Improved empty state display in the matrix with icons and more compact design
+   - Fixed duplicate heading issue by reorganizing the layout
+   - Made the Eisenhower Matrix use full screen width for better visibility
+   - Improved visual consistency across components
 
 ## Known Issues
 
-- None currently identified 
+- None currently identified

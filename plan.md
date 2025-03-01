@@ -8,6 +8,11 @@ Todo:
 
 * [X] Add time deadline on the task
 * [X] The change pirority: it's a big long and not nice. Think of some way to make it nicely and shorter.
+* [X] UI Improvements
+  * [X] Add tooltips for better user guidance
+  * [X] Improve empty state display in Eisenhower Matrix
+  * [X] Fix duplicate heading issue
+  * [X] Make the matrix use full screen width
 
 Core:
 
@@ -16,11 +21,14 @@ Core:
   * [X] Life
   * [X] Work
   * [X] Project
-* [ ] *** Some how i can use on the website: database, log in? (In Progress)
+* [X] *** Some how i can use on the website: database, log in? (In Progress)
+
   * [X] Firebase setup for authentication and database
   * [X] User authentication UI (login/register)
   * [X] Database integration for task persistence
-  * [ ] Complete testing and deployment
+  * [X] Complete testing and deployment
+
+
 
 * [ ] AI auto set priority ***
 
@@ -76,6 +84,8 @@ Nice to have:
 - [X] Responsive design
 - [X] Dark mode support
 - [X] Intuitive user interface
+- [X] Tooltips for better user guidance
+- [X] Improved empty states
 
 ## Technical Stack
 
@@ -83,6 +93,7 @@ Nice to have:
 - TypeScript
 - Tailwind CSS for styling
 - Local storage for data persistence (initial version)
+- Firebase for authentication and cloud storage
 
 ## Implementation Phases
 
@@ -107,10 +118,12 @@ Nice to have:
 - [X] Implement score tracking
 - [X] Add task reordering within priority levels
 - [X] Implement moving tasks between priority levels
+- [X] Add multiple to-do lists
 
 ### Phase 4: UI Enhancements
 
 - [X] Implement dark mode
 - [X] Polish UI/UX
 - [X] Add responsive design improvements
+- [X] Add tooltips and improve user guidance
 - [X] Final testing and bug fixes
