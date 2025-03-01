@@ -1,108 +1,99 @@
-# AI Todo List Web App
+# AI Todo List - Project Documentation
 
-## Architecture
+## Project Overview
+
+The AI Todo List is a modern task management application that helps users organize tasks using the Eisenhower Matrix (prioritizing by urgency and importance). The app features:
+
+- **Task prioritization** using four levels (Urgent & Important, Important but Not Urgent, etc.)
+- **Multiple todo lists** for different areas of life (Work, Personal, Projects)
+- **User authentication** with Firebase for cloud storage
+- **Offline functionality** with localStorage for non-authenticated users
+- **Dark/light mode** theme support
+- **Score tracking** system based on task priority
+
+## Architecture Diagram
 
 ```
-src/
-├── app/        # Next.js app router
-├── components/ # React components
-├── context/    # Context providers
-├── hooks/      # Custom hooks
-├── lib/        # Utilities
-└── types/      # TypeScript types
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│                 │     │                 │     │                 │
+│  User Interface │────▶│  Context Layer  │────▶│  Storage Layer  │
+│                 │     │                 │     │                 │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+        │                       │                       │
+        ▼                       ▼                       ▼
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│ - TaskMatrix    │     │ - TasksContext  │     │ - localStorage  │
+│ - TaskInput     │     │ - AuthContext   │     │ - Firebase      │
+│ - TodoSelector  │     │ - ThemeContext  │     │   Firestore     │
+│ - FilterBar     │     │ - Reducers      │     │                 │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
 ```
+
+## Core Components
+
+### Context Layer
+- **TasksContext**: Central state management for tasks, todo lists, and filters
+- **AuthContext**: Handles user authentication (login, register, logout)
+- **ThemeContext**: Manages dark/light mode preferences
+
+### UI Components
+- **TaskMatrix**: Displays tasks in the Eisenhower Matrix format
+- **TaskInput**: Form for creating and editing tasks
+- **TodoListSelector**: Interface for switching between multiple todo lists
+- **FilterBar**: Controls for filtering tasks (All, Active, Completed)
+
+### Storage Layer
+- **localStorage**: Stores data for non-authenticated users
+- **Firebase Firestore**: Stores data for authenticated users
+- **Hybrid approach**: Uses both systems for redundancy and reliability
 
 ## Data Flow
-- User interactions → Component events → Hooks → Context actions → State updates → Re-renders
-- **State**: TasksContext (tasks), ThemeContext (dark/light mode)
-- **Persistence**: Local storage + Firebase (when logged in)
 
-## Key Components
-- **TaskInput**: Create new tasks
-- **Task**: Display individual task with actions
-- **TaskList**: Render tasks list
-- **TaskMatrix**: Organize by priority
-- **FilterBar**: Task filtering
-- **TodoListSelector**: Manage multiple lists
-- **Header**: App header with theme toggle
+1. User actions (add/edit/delete tasks) trigger dispatch calls to TasksContext
+2. TasksReducer processes actions and updates application state
+3. useEffect hooks in TasksProvider detect state changes and save to storage
+4. Data is persisted to both localStorage and Firebase (when authenticated)
+5. On page refresh or app restart, data is loaded from the appropriate storage
 
-## Core Features
-1. **Task Management**
-   - CRUD operations for tasks
-   - Priority system (Eisenhower Matrix)
-   - Deadlines with date/time
-   - Task reordering
+## Key Problems & Solutions
 
-2. **Multiple Lists**
-   - Create/switch/rename/delete lists
-   - Each list has independent tasks
+### 1. Task Loss on Page Refresh
+**Problem**: Tasks would disappear when refreshing the page, especially after login.
 
-3. **Priority System**
-   - Four levels based on Eisenhower Matrix
-   - Point scoring for completed tasks
-   - Compact display (U+I, I, U, Low)
+**Solution**:
+- Implemented comprehensive error handling for all storage operations
+- Added checks for localStorage availability before operations
+- Enhanced logging to track data flow and identify issues
 
-4. **Firebase Integration**
-   - Authentication (email/password)
-   - Firestore data persistence
-   - Local-to-cloud migration
+### 2. Authentication/Storage Conflicts
+**Problem**: Conflicts between localStorage and Firebase storage when users logged in/out.
+
+**Solution**:
+- Implemented a dual storage strategy that saves to both systems
+- Created fallback mechanisms to use localStorage if Firebase fails
+- Preserved localStorage data during login/logout transitions
+
+### 3. Data Migration Issues
+**Problem**: Data wasn't properly migrating between localStorage and Firebase.
+
+**Solution**:
+- Improved the migration process to maintain data in both places
+- Added fallback to localStorage when Firebase has no data
+- Enhanced error handling during migration
 
 ## Design Decisions
-- Different priority UIs for creation vs. display
-- Separate date/time inputs for deadlines
-- Intuitive layout with list selector at top
 
-## Recent Changes
+1. **Hybrid Storage Approach**: We use both localStorage and Firebase to ensure data is never lost, even if one system fails.
 
-1. **Added Time Deadline Feature**
+2. **Eisenhower Matrix**: Tasks are organized by urgency and importance, helping users prioritize effectively.
 
-   - Extended Task interface with deadlineTime field
-   - Updated TaskInput component with time input
-   - Modified Task component to display and edit time
-   - Added formatDeadline utility function
-2. **Improved Priority Selection UI**
+3. **Multiple Todo Lists**: Users can separate tasks into different contexts (work, personal, projects).
 
-   - Created ShortPriorityLabels for compact display in task list
-   - Used full priority labels in task creation/editing forms
-   - Replaced dropdown with button grid
-   - Added visual styling for better UX
-   - Implemented in both creation and editing interfaces
-3. **Added Multiple To-Do Lists Feature**
+4. **Score System**: Each task has a point value based on priority, encouraging completion of important tasks.
 
-   - Created TodoList interface to represent separate to-do lists
-   - Updated TasksState to manage multiple to-do lists
-   - Created TodoListSelector component for creating, selecting, and deleting to-do lists
-   - Modified TasksContext to handle operations on multiple to-do lists
-   - Added migration utility to convert existing tasks to the new format
-   - Updated UI to display the active to-do list and its tasks
-4. **Reorganized UI Layout**
+## Future Improvements
 
-   - Moved TodoListSelector to the top for better visibility
-   - Simplified the layout to make it more intuitive
-   - Improved the flow from selecting a list to working with tasks
-5. **Added Firebase Integration**
-
-   - Implemented Firebase authentication (email/password)
-   - Added login and registration UI
-   - Created Firestore database integration for data persistence
-   - Updated storage utilities to use Firestore when user is logged in
-   - Added data migration from local storage to Firestore
-   - Implemented loading states for better UX during data operations
-6. **Enhanced UI with Tooltips and Visual Improvements**
-
-   - Added tooltips to explain the Eisenhower Matrix, score system, and filters
-   - Improved empty state display in the matrix with icons and more compact design
-   - Fixed duplicate heading issue by reorganizing the layout
-   - Made the Eisenhower Matrix use full screen width for better visibility
-   - Improved visual consistency across components
-7. **Fixed Filter Issue with Eisenhower Matrix**
-
-   - Fixed issue where tasks were not appearing in the Eisenhower Matrix
-   - Problem: The filter was set to "Completed" but there were no completed tasks
-   - Solution: Added auto-reset functionality to change filter to "All" when no completed tasks exist
-   - Added detailed logging in TaskMatrix component to track task distribution by priority
-   - Improved filter state management to ensure newly added tasks are visible
-
-## Known Issues
-
-- None currently identified
+- AI-powered task prioritization based on user patterns
+- Time blocking integration for focused work
+- Weekly/monthly review prompts
+- Calendar system integration

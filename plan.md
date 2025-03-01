@@ -21,13 +21,23 @@ Core:
   * [X] Life
   * [X] Work
   * [X] Project
-* [X] *** Some how i can use on the website: database, log in? (In Progress)
+
+
+
+* [X] *** Some how i can use on the website: database, log in? (In Progress) - Mar 1
 
   * [X] Firebase setup for authentication and database
   * [X] User authentication UI (login/register)
   * [X] Database integration for task persistence
   * [X] Complete testing and deployment
 
+
+
+Mar1:
+
+- [X] Restart, lost all task - Fixed by improving localStorage handling and adding proper error handling
+- [ ] deployment
+- [ ] Organize documentation: remove recent change.
 
 
 * [ ] AI auto set priority ***

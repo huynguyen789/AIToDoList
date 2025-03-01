@@ -3,7 +3,7 @@
  * Provides global state management for tasks
  */
 
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useState } from 'react';
 import { Task, TasksState, TasksAction, FilterOption, PriorityLevel, TodoList } from '../types';
 import { 
   loadTodoLists, 
@@ -188,7 +188,6 @@ const tasksReducer = (state: TasksState, action: TasksAction): TasksState => {
     }
     
     case 'SET_FILTER': {
-      saveFilter(action.payload);
       return {
         ...state,
         filter: action.payload,
@@ -270,7 +269,7 @@ const tasksReducer = (state: TasksState, action: TasksAction): TasksState => {
     }
     
     case 'SET_ACTIVE_TODO_LIST': {
-      saveActiveTodoListId(action.payload);
+      // We'll handle saving in the useEffect hook
       
       // Find the active todo list to calculate score
       const activeTodoList = state.todoLists.find(list => list.id === action.payload);
@@ -319,22 +318,64 @@ const tasksReducer = (state: TasksState, action: TasksAction): TasksState => {
 export const TasksProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(tasksReducer, initialState);
   const { user } = useAuth();
+  const [isClient, setIsClient] = useState(false);
+  
+  // Set isClient to true when component mounts (client-side only)
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
   
   // Load data from storage on mount and when user changes
   useEffect(() => {
+    // Skip if not on client side
+    if (!isClient) return;
+    
     const loadData = async () => {
       dispatch({ type: 'SET_LOADING', payload: true });
       
       try {
+        console.log('Loading data from storage, user:', user?.uid);
+        
         // If user is logged in, try to migrate local data to Firestore
         if (user && user.uid) {
+          console.log('User is logged in, migrating local data to Firestore if needed');
           await migrateLocalDataToFirestore(user.uid);
+        } else {
+          console.log('User is not logged in, using localStorage only');
         }
         
         // Load data from appropriate storage
-        const todoLists = await loadTodoLists(user?.uid);
-        const activeTodoListId = await loadActiveTodoListId(user?.uid);
+        let todoLists = await loadTodoLists(user?.uid);
+        console.log('Loaded todo lists:', todoLists);
+        
+        // Create a default todo list if none exists
+        if (todoLists.length === 0) {
+          console.log('No todo lists found, creating default list');
+          const defaultList: TodoList = {
+            id: 'default-' + Date.now(),
+            name: 'My Tasks',
+            tasks: [],
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          };
+          todoLists = [defaultList];
+          
+          // Save the default list immediately
+          await saveTodoLists(todoLists, user?.uid);
+        }
+        
+        // Set active todo list ID to the first list if none is set
+        let activeTodoListId = await loadActiveTodoListId(user?.uid);
+        console.log('Loaded active todo list ID:', activeTodoListId);
+        
+        if (!activeTodoListId && todoLists.length > 0) {
+          console.log('No active todo list ID found, setting to first list');
+          activeTodoListId = todoLists[0].id;
+          await saveActiveTodoListId(activeTodoListId, user?.uid);
+        }
+        
         const filter = await loadFilter(user?.uid);
+        console.log('Loaded filter:', filter);
         
         dispatch({
           type: 'INITIALIZE_DATA',
@@ -346,22 +387,43 @@ export const TasksProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         });
       } catch (error) {
         console.error('Error loading data:', error);
+        // Initialize with empty data on error to prevent undefined state
+        dispatch({
+          type: 'INITIALIZE_DATA',
+          payload: {
+            todoLists: [],
+            activeTodoListId: null,
+            filter: FilterOption.All,
+          },
+        });
+      } finally {
         dispatch({ type: 'SET_LOADING', payload: false });
       }
     };
     
     loadData();
-  }, [user]);
+  }, [user, isClient]);
   
   // Save data to storage when state changes
   useEffect(() => {
+    // Skip if not on client side
+    if (!isClient) return;
+    
     // Skip saving during initial load
-    if (state.loading) return;
+    if (state.loading) {
+      console.log('Skipping save during loading');
+      return;
+    }
     
     const saveData = async () => {
       try {
+        console.log('Saving todo lists to storage:', state.todoLists);
         await saveTodoLists(state.todoLists, user?.uid);
+        
+        console.log('Saving active todo list ID to storage:', state.activeTodoListId);
         await saveActiveTodoListId(state.activeTodoListId, user?.uid);
+        
+        console.log('Saving filter to storage:', state.filter);
         await saveFilter(state.filter, user?.uid);
       } catch (error) {
         console.error('Error saving data:', error);
@@ -369,7 +431,7 @@ export const TasksProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
     
     saveData();
-  }, [state.todoLists, state.activeTodoListId, state.filter, user]);
+  }, [state.todoLists, state.activeTodoListId, state.filter, user, isClient]);
   
   return (
     <TasksContext.Provider value={{ state, dispatch }}>

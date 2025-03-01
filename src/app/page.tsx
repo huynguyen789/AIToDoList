@@ -11,6 +11,7 @@ import { TaskInput } from '../components/TaskInput';
 import { FilterBar } from '../components/FilterBar';
 import { TodoListSelector } from '../components/TodoListSelector';
 import { TaskMatrix } from '../components/TaskMatrix';
+import { DebugInfo } from '../components/DebugInfo';
 import { TasksProvider } from '../context/TasksContext';
 import { ThemeProvider } from '../context/ThemeContext';
 import { AuthProvider } from '../context/AuthContext';
@@ -78,6 +79,8 @@ const AppContent = () => {
           </p>
         </div>
       )}
+      
+      <DebugInfo />
     </div>
   );
 };

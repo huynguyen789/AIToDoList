@@ -92,6 +92,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = async () => {
     setError(null);
     try {
+      // We're no longer clearing localStorage on logout to ensure data persistence
+      // This allows users to still have their tasks when they log out
+      console.log('Logging out user, keeping localStorage data for offline use');
+      
       await signOut(auth);
     } catch (error) {
       if (error instanceof Error) {
