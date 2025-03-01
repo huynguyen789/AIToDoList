@@ -4,13 +4,22 @@
  */
 
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
-import { Task, TasksState, TasksAction, FilterOption, PriorityLevel } from '../types';
-import { loadTasks, saveTasks, loadFilter, saveFilter } from '../lib/storage';
+import { Task, TasksState, TasksAction, FilterOption, PriorityLevel, TodoList } from '../types';
+import { 
+  loadTodoLists, 
+  saveTodoLists, 
+  loadFilter, 
+  saveFilter, 
+  loadActiveTodoListId, 
+  saveActiveTodoListId,
+  migrateOldTasks
+} from '../lib/storage';
 import { calculateTotalScore, updateTaskOrders, moveTask, changeTaskPriority } from '../lib/taskUtils';
 
 // Initial state
 const initialState: TasksState = {
-  tasks: [],
+  todoLists: [],
+  activeTodoListId: null,
   filter: FilterOption.All,
   totalScore: 0,
 };
@@ -31,10 +40,32 @@ const TasksContext = createContext<{
  * Output: New state
  */
 const tasksReducer = (state: TasksState, action: TasksAction): TasksState => {
+  // Helper function to get active todo list
+  const getActiveTodoList = () => {
+    if (!state.activeTodoListId || !state.todoLists.length) return null;
+    return state.todoLists.find(list => list.id === state.activeTodoListId) || null;
+  };
+  
+  // Helper function to update a todo list
+  const updateTodoList = (todoListId: string, updatedTasks: Task[]) => {
+    return state.todoLists.map(todoList => 
+      todoList.id === todoListId
+        ? { 
+            ...todoList, 
+            tasks: updatedTasks,
+            updatedAt: new Date().toISOString()
+          }
+        : todoList
+    );
+  };
+  
   switch (action.type) {
     case 'ADD_TASK': {
+      const activeTodoList = getActiveTodoList();
+      if (!activeTodoList) return state;
+      
       // Find highest order in the priority level
-      const tasksInPriority = state.tasks.filter(
+      const tasksInPriority = activeTodoList.tasks.filter(
         task => task.priority === action.payload.priority
       );
       const highestOrder = tasksInPriority.length > 0
@@ -43,30 +74,40 @@ const tasksReducer = (state: TasksState, action: TasksAction): TasksState => {
       
       // Add new task with correct order
       const newTask = { ...action.payload, order: highestOrder };
-      const newTasks = [...state.tasks, newTask];
+      const updatedTasks = [...activeTodoList.tasks, newTask];
+      
+      const updatedTodoLists = updateTodoList(activeTodoList.id, updatedTasks);
       
       return {
         ...state,
-        tasks: newTasks,
-        totalScore: calculateTotalScore(newTasks),
+        todoLists: updatedTodoLists,
+        totalScore: calculateTotalScore(updatedTasks),
       };
     }
     
     case 'UPDATE_TASK': {
-      const updatedTasks = state.tasks.map(task =>
+      const activeTodoList = getActiveTodoList();
+      if (!activeTodoList) return state;
+      
+      const updatedTasks = activeTodoList.tasks.map(task =>
         task.id === action.payload.id ? { ...action.payload } : task
       );
       
+      const updatedTodoLists = updateTodoList(activeTodoList.id, updatedTasks);
+      
       return {
         ...state,
-        tasks: updatedTasks,
+        todoLists: updatedTodoLists,
         totalScore: calculateTotalScore(updatedTasks),
       };
     }
     
     case 'DELETE_TASK': {
-      const filteredTasks = state.tasks.filter(task => task.id !== action.payload);
-      const taskToDelete = state.tasks.find(task => task.id === action.payload);
+      const activeTodoList = getActiveTodoList();
+      if (!activeTodoList) return state;
+      
+      const filteredTasks = activeTodoList.tasks.filter(task => task.id !== action.payload);
+      const taskToDelete = activeTodoList.tasks.find(task => task.id === action.payload);
       
       // If task exists, update orders for its priority level
       let updatedTasks = filteredTasks;
@@ -74,15 +115,20 @@ const tasksReducer = (state: TasksState, action: TasksAction): TasksState => {
         updatedTasks = updateTaskOrders(filteredTasks, taskToDelete.priority);
       }
       
+      const updatedTodoLists = updateTodoList(activeTodoList.id, updatedTasks);
+      
       return {
         ...state,
-        tasks: updatedTasks,
+        todoLists: updatedTodoLists,
         totalScore: calculateTotalScore(updatedTasks),
       };
     }
     
     case 'TOGGLE_COMPLETE': {
-      const updatedTasks = state.tasks.map(task =>
+      const activeTodoList = getActiveTodoList();
+      if (!activeTodoList) return state;
+      
+      const updatedTasks = activeTodoList.tasks.map(task =>
         task.id === action.payload
           ? {
               ...task,
@@ -92,37 +138,49 @@ const tasksReducer = (state: TasksState, action: TasksAction): TasksState => {
           : task
       );
       
+      const updatedTodoLists = updateTodoList(activeTodoList.id, updatedTasks);
+      
       return {
         ...state,
-        tasks: updatedTasks,
+        todoLists: updatedTodoLists,
         totalScore: calculateTotalScore(updatedTasks),
       };
     }
     
     case 'CHANGE_PRIORITY': {
+      const activeTodoList = getActiveTodoList();
+      if (!activeTodoList) return state;
+      
       const updatedTasks = changeTaskPriority(
-        state.tasks,
+        activeTodoList.tasks,
         action.payload.id,
         action.payload.priority
       );
       
+      const updatedTodoLists = updateTodoList(activeTodoList.id, updatedTasks);
+      
       return {
         ...state,
-        tasks: updatedTasks,
+        todoLists: updatedTodoLists,
         totalScore: calculateTotalScore(updatedTasks),
       };
     }
     
     case 'MOVE_TASK': {
+      const activeTodoList = getActiveTodoList();
+      if (!activeTodoList) return state;
+      
       const updatedTasks = moveTask(
-        state.tasks,
+        activeTodoList.tasks,
         action.payload.id,
         action.payload.direction
       );
       
+      const updatedTodoLists = updateTodoList(activeTodoList.id, updatedTasks);
+      
       return {
         ...state,
-        tasks: updatedTasks,
+        todoLists: updatedTodoLists,
       };
     }
     
@@ -135,9 +193,92 @@ const tasksReducer = (state: TasksState, action: TasksAction): TasksState => {
     }
     
     case 'CALCULATE_SCORE': {
+      const activeTodoList = getActiveTodoList();
+      const totalScore = activeTodoList 
+        ? calculateTotalScore(activeTodoList.tasks)
+        : 0;
+        
       return {
         ...state,
-        totalScore: calculateTotalScore(state.tasks),
+        totalScore,
+      };
+    }
+    
+    case 'ADD_TODO_LIST': {
+      const now = new Date().toISOString();
+      const newTodoList: TodoList = {
+        id: `list-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        name: action.payload.name,
+        tasks: [],
+        createdAt: now,
+        updatedAt: now
+      };
+      
+      const updatedTodoLists = [...state.todoLists, newTodoList];
+      
+      // Set as active if it's the first list
+      const newActiveTodoListId = state.activeTodoListId || newTodoList.id;
+      
+      return {
+        ...state,
+        todoLists: updatedTodoLists,
+        activeTodoListId: newActiveTodoListId,
+      };
+    }
+    
+    case 'UPDATE_TODO_LIST': {
+      const updatedTodoLists = state.todoLists.map(todoList =>
+        todoList.id === action.payload.id
+          ? {
+              ...todoList,
+              name: action.payload.name,
+              updatedAt: new Date().toISOString(),
+            }
+          : todoList
+      );
+      
+      return {
+        ...state,
+        todoLists: updatedTodoLists,
+      };
+    }
+    
+    case 'DELETE_TODO_LIST': {
+      // Don't allow deleting the last todo list
+      if (state.todoLists.length <= 1) {
+        return state;
+      }
+      
+      const filteredTodoLists = state.todoLists.filter(
+        todoList => todoList.id !== action.payload
+      );
+      
+      // If deleting the active todo list, set a new active one
+      let newActiveTodoListId = state.activeTodoListId;
+      if (state.activeTodoListId === action.payload) {
+        newActiveTodoListId = filteredTodoLists[0]?.id || null;
+      }
+      
+      return {
+        ...state,
+        todoLists: filteredTodoLists,
+        activeTodoListId: newActiveTodoListId,
+      };
+    }
+    
+    case 'SET_ACTIVE_TODO_LIST': {
+      saveActiveTodoListId(action.payload);
+      
+      // Find the active todo list to calculate score
+      const activeTodoList = state.todoLists.find(list => list.id === action.payload);
+      const totalScore = activeTodoList 
+        ? calculateTotalScore(activeTodoList.tasks)
+        : 0;
+      
+      return {
+        ...state,
+        activeTodoListId: action.payload,
+        totalScore,
       };
     }
     
@@ -155,25 +296,81 @@ const tasksReducer = (state: TasksState, action: TasksAction): TasksState => {
 export const TasksProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(tasksReducer, initialState);
   
-  // Load tasks and filter from local storage on initial render
+  // Load todo lists and preferences from local storage on initial render
   useEffect(() => {
-    const savedTasks = loadTasks();
-    const savedFilter = loadFilter();
+    // Try to migrate old tasks first
+    const migratedLists = migrateOldTasks();
     
-    if (savedTasks.length > 0) {
-      savedTasks.forEach(task => {
-        dispatch({ type: 'ADD_TASK', payload: task });
+    // Load todo lists
+    let todoLists = loadTodoLists();
+    if (migratedLists.length > 0) {
+      todoLists = migratedLists;
+      saveTodoLists(todoLists);
+    }
+    
+    // Create a default list if none exists
+    if (todoLists.length === 0) {
+      const defaultList: TodoList = {
+        id: `list-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        name: 'My Tasks',
+        tasks: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      todoLists = [defaultList];
+    }
+    
+    // Set todo lists
+    todoLists.forEach(todoList => {
+      dispatch({ 
+        type: 'ADD_TODO_LIST', 
+        payload: { name: todoList.name } 
+      });
+      
+      // Add tasks for each todo list
+      if (todoList.tasks.length > 0) {
+        // Set active todo list before adding tasks
+        dispatch({ 
+          type: 'SET_ACTIVE_TODO_LIST', 
+          payload: todoList.id 
+        });
+        
+        // Add each task
+        todoList.tasks.forEach(task => {
+          dispatch({ type: 'ADD_TASK', payload: task });
+        });
+      }
+    });
+    
+    // Load active todo list ID
+    const savedActiveTodoListId = loadActiveTodoListId();
+    if (savedActiveTodoListId && todoLists.some(list => list.id === savedActiveTodoListId)) {
+      dispatch({ 
+        type: 'SET_ACTIVE_TODO_LIST', 
+        payload: savedActiveTodoListId 
+      });
+    } else if (todoLists.length > 0) {
+      // Set first list as active if no active list is saved
+      dispatch({ 
+        type: 'SET_ACTIVE_TODO_LIST', 
+        payload: todoLists[0].id 
       });
     }
     
-    dispatch({ type: 'SET_FILTER', payload: savedFilter });
+    // Load other preferences
+    dispatch({ type: 'SET_FILTER', payload: loadFilter() });
     dispatch({ type: 'CALCULATE_SCORE' });
   }, []);
   
-  // Save tasks to local storage whenever they change
+  // Save todo lists to local storage whenever they change
   useEffect(() => {
-    saveTasks(state.tasks);
-  }, [state.tasks]);
+    saveTodoLists(state.todoLists);
+  }, [state.todoLists]);
+  
+  // Save active todo list ID whenever it changes
+  useEffect(() => {
+    saveActiveTodoListId(state.activeTodoListId);
+  }, [state.activeTodoListId]);
   
   return (
     <TasksContext.Provider value={{ state, dispatch }}>
@@ -183,10 +380,10 @@ export const TasksProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 };
 
 /**
- * Custom hook to use the tasks context
+ * Hook to access tasks context
  * Input: None
- * Process: Access context
- * Output: State and dispatch function
+ * Process: Get context
+ * Output: Context state and dispatch
  */
 export const useTasks = () => {
   const context = useContext(TasksContext);

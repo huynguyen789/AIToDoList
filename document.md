@@ -39,6 +39,7 @@ src/
 - **TaskList**: Renders list of tasks
 - **TaskMatrix**: Organizes tasks by priority
 - **FilterBar**: Controls for filtering tasks
+- **TodoListSelector**: Interface for managing multiple to-do lists
 - **Header**: App header with theme toggle
 
 ## Features
@@ -50,6 +51,13 @@ src/
 - Set task priority using Eisenhower Matrix
 - Add deadline date and time
 - Reorder tasks within priority levels
+
+### Multiple To-Do Lists
+
+- Create separate to-do lists for different purposes
+- Switch between lists
+- Rename and delete lists
+- Each list maintains its own set of tasks
 
 ### Priority System
 
@@ -73,6 +81,11 @@ src/
    - Combined display format: "Date at Time"
    - Made both optional for flexibility
 
+3. **UI Layout**
+   - TodoListSelector at the top for easy access to different lists
+   - FilterBar on the left side for filtering tasks
+   - Main content area shows the active to-do list's tasks organized by priority
+
 ## Recent Changes
 
 1. **Added Time Deadline Feature**
@@ -87,6 +100,25 @@ src/
    - Replaced dropdown with button grid
    - Added visual styling for better UX
    - Implemented in both creation and editing interfaces
+
+3. **Added Multiple To-Do Lists Feature**
+   - Created TodoList interface to represent separate to-do lists
+   - Updated TasksState to manage multiple to-do lists
+   - Created TodoListSelector component for creating, selecting, and deleting to-do lists
+   - Modified TasksContext to handle operations on multiple to-do lists
+   - Added migration utility to convert existing tasks to the new format
+   - Updated UI to display the active to-do list and its tasks
+
+4. **Removed Category Feature**
+   - Simplified the data model by removing TaskCategory enum and related fields
+   - Removed CategorySelector component
+   - Updated task creation and filtering to no longer use categories
+   - Streamlined the UI by focusing on to-do lists instead of categories
+
+5. **Reorganized UI Layout**
+   - Moved TodoListSelector to the top for better visibility
+   - Simplified the layout to make it more intuitive
+   - Improved the flow from selecting a list to working with tasks
 
 ## Known Issues
 

@@ -4,7 +4,7 @@
  */
 
 import { useTasks } from '../context/TasksContext';
-import { Task, PriorityLevel, FilterOption } from '../types';
+import { Task, PriorityLevel, FilterOption, TodoList } from '../types';
 import { createTask } from '../lib/taskUtils';
 
 /**
@@ -15,6 +15,17 @@ import { createTask } from '../lib/taskUtils';
  */
 export const useTaskOperations = () => {
   const { state, dispatch } = useTasks();
+  
+  /**
+   * Get active todo list
+   * Input: None
+   * Process: Find active todo list in state
+   * Output: Active todo list or null
+   */
+  const getActiveTodoList = (): TodoList | null => {
+    if (!state.activeTodoListId || !state.todoLists.length) return null;
+    return state.todoLists.find(list => list.id === state.activeTodoListId) || null;
+  };
   
   /**
    * Add a new task
@@ -29,7 +40,7 @@ export const useTaskOperations = () => {
     priority: PriorityLevel = PriorityLevel.UrgentImportant,
     deadlineTime?: string
   ) => {
-    if (!title.trim()) return;
+    if (!title.trim() || !state.activeTodoListId) return;
     
     const newTask = createTask(title, priority);
     
@@ -120,8 +131,71 @@ export const useTaskOperations = () => {
     dispatch({ type: 'SET_FILTER', payload: filter });
   };
   
+  /**
+   * Add a new todo list
+   * Input: List name
+   * Process: Dispatch add todo list action
+   * Output: None
+   */
+  const addTodoList = (name: string) => {
+    if (!name.trim()) return;
+    
+    dispatch({
+      type: 'ADD_TODO_LIST',
+      payload: { name },
+    });
+  };
+  
+  /**
+   * Update a todo list
+   * Input: List ID and new name
+   * Process: Dispatch update todo list action
+   * Output: None
+   */
+  const updateTodoList = (id: string, name: string) => {
+    if (!name.trim()) return;
+    
+    dispatch({
+      type: 'UPDATE_TODO_LIST',
+      payload: { id, name },
+    });
+  };
+  
+  /**
+   * Delete a todo list
+   * Input: List ID
+   * Process: Dispatch delete todo list action
+   * Output: None
+   */
+  const deleteTodoList = (id: string) => {
+    dispatch({
+      type: 'DELETE_TODO_LIST',
+      payload: id,
+    });
+  };
+  
+  /**
+   * Set active todo list
+   * Input: List ID
+   * Process: Dispatch set active todo list action
+   * Output: None
+   */
+  const setActiveTodoList = (id: string) => {
+    dispatch({
+      type: 'SET_ACTIVE_TODO_LIST',
+      payload: id,
+    });
+  };
+  
+  // Get tasks from active todo list
+  const activeTodoList = getActiveTodoList();
+  const tasks = activeTodoList ? activeTodoList.tasks : [];
+  
   return {
-    tasks: state.tasks,
+    todoLists: state.todoLists,
+    activeTodoListId: state.activeTodoListId,
+    activeTodoList,
+    tasks,
     filter: state.filter,
     totalScore: state.totalScore,
     addTask,
@@ -131,5 +205,9 @@ export const useTaskOperations = () => {
     changePriority,
     moveTask,
     setFilter,
+    addTodoList,
+    updateTodoList,
+    deleteTodoList,
+    setActiveTodoList,
   };
 }; 

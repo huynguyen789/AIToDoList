@@ -9,6 +9,7 @@ import React from 'react';
 import { Header } from '../components/Header';
 import { TaskInput } from '../components/TaskInput';
 import { FilterBar } from '../components/FilterBar';
+import { TodoListSelector } from '../components/TodoListSelector';
 import { TaskMatrix } from '../components/TaskMatrix';
 import { TasksProvider } from '../context/TasksContext';
 import { ThemeProvider } from '../context/ThemeContext';
@@ -21,14 +22,42 @@ import { useTaskOperations } from '../hooks/useTaskOperations';
  * Output: Main app UI
  */
 const AppContent = () => {
-  const { tasks, filter } = useTaskOperations();
+  const { tasks, filter, activeTodoList } = useTaskOperations();
   
   return (
     <div className="container mx-auto px-4 py-8">
       <Header />
-      <TaskInput />
-      <FilterBar />
-      <TaskMatrix tasks={tasks} filter={filter} />
+      
+      <div className="mb-6">
+        <TodoListSelector />
+      </div>
+      
+      {activeTodoList && (
+        <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
+          <div className="w-full md:w-1/3">
+            <FilterBar />
+          </div>
+          
+          <div className="w-full md:w-2/3">
+            <div className="mb-6">
+              <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
+                {activeTodoList.name}
+              </h1>
+            </div>
+            
+            <TaskInput />
+            <TaskMatrix tasks={tasks} filter={filter} />
+          </div>
+        </div>
+      )}
+      
+      {!activeTodoList && (
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 text-center">
+          <p className="text-gray-600 dark:text-gray-300">
+            Please create a to-do list to get started.
+          </p>
+        </div>
+      )}
     </div>
   );
 };

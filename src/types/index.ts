@@ -49,6 +49,15 @@ export interface Task {
   order: number; // For ordering within priority level
 }
 
+// Todo list interface
+export interface TodoList {
+  id: string;
+  name: string;
+  tasks: Task[];
+  createdAt: string; // ISO date string
+  updatedAt: string; // ISO date string
+}
+
 // Task filter options
 export enum FilterOption {
   All = "all",
@@ -58,7 +67,8 @@ export enum FilterOption {
 
 // Task context state
 export interface TasksState {
-  tasks: Task[];
+  todoLists: TodoList[];
+  activeTodoListId: string | null;
   filter: FilterOption;
   totalScore: number;
 }
@@ -72,7 +82,11 @@ export type TasksAction =
   | { type: 'CHANGE_PRIORITY'; payload: { id: string; priority: PriorityLevel } }
   | { type: 'MOVE_TASK'; payload: { id: string; direction: 'up' | 'down' } }
   | { type: 'SET_FILTER'; payload: FilterOption }
-  | { type: 'CALCULATE_SCORE' };
+  | { type: 'CALCULATE_SCORE' }
+  | { type: 'ADD_TODO_LIST'; payload: { name: string } }
+  | { type: 'UPDATE_TODO_LIST'; payload: { id: string; name: string } }
+  | { type: 'DELETE_TODO_LIST'; payload: string } // todo list id
+  | { type: 'SET_ACTIVE_TODO_LIST'; payload: string }; // todo list id
 
 // Theme context
 export interface ThemeState {

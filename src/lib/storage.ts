@@ -3,42 +3,73 @@
  * Handles saving and retrieving tasks from local storage
  */
 
-import { Task, FilterOption, PriorityLevel } from '../types';
+import { Task, FilterOption, PriorityLevel, TodoList } from '../types';
 
-const TASKS_STORAGE_KEY = 'ai-todo-list-tasks';
+const TODO_LISTS_STORAGE_KEY = 'ai-todo-lists';
+const ACTIVE_TODO_LIST_ID_KEY = 'ai-active-todo-list-id';
 const THEME_STORAGE_KEY = 'ai-todo-list-theme';
 const FILTER_STORAGE_KEY = 'ai-todo-list-filter';
 
 /**
- * Save tasks to local storage
- * Input: Array of tasks
+ * Save todo lists to local storage
+ * Input: Array of todo lists
  * Process: Stringify and store in localStorage
  * Output: None
  */
-export const saveTasks = (tasks: Task[]): void => {
+export const saveTodoLists = (todoLists: TodoList[]): void => {
   if (typeof window !== 'undefined') {
-    localStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify(tasks));
+    localStorage.setItem(TODO_LISTS_STORAGE_KEY, JSON.stringify(todoLists));
   }
 };
 
 /**
- * Load tasks from local storage
+ * Load todo lists from local storage
  * Input: None
  * Process: Retrieve and parse from localStorage
- * Output: Array of tasks or empty array if none found
+ * Output: Array of todo lists or empty array if none found
  */
-export const loadTasks = (): Task[] => {
+export const loadTodoLists = (): TodoList[] => {
   if (typeof window !== 'undefined') {
-    const tasksJson = localStorage.getItem(TASKS_STORAGE_KEY);
-    if (tasksJson) {
+    const todoListsJson = localStorage.getItem(TODO_LISTS_STORAGE_KEY);
+    if (todoListsJson) {
       try {
-        return JSON.parse(tasksJson);
+        return JSON.parse(todoListsJson);
       } catch (error) {
-        console.error('Failed to parse tasks from localStorage:', error);
+        console.error('Failed to parse todo lists from localStorage:', error);
       }
     }
   }
   return [];
+};
+
+/**
+ * Save active todo list ID to local storage
+ * Input: Todo list ID
+ * Process: Store in localStorage
+ * Output: None
+ */
+export const saveActiveTodoListId = (id: string | null): void => {
+  if (typeof window !== 'undefined') {
+    if (id) {
+      localStorage.setItem(ACTIVE_TODO_LIST_ID_KEY, id);
+    } else {
+      localStorage.removeItem(ACTIVE_TODO_LIST_ID_KEY);
+    }
+  }
+};
+
+/**
+ * Load active todo list ID from local storage
+ * Input: None
+ * Process: Retrieve from localStorage
+ * Output: Todo list ID or null if not found
+ */
+export const loadActiveTodoListId = (): string | null => {
+  if (typeof window !== 'undefined') {
+    const id = localStorage.getItem(ACTIVE_TODO_LIST_ID_KEY);
+    return id;
+  }
+  return null;
 };
 
 /**
@@ -99,4 +130,42 @@ export const loadFilter = (): FilterOption => {
     }
   }
   return FilterOption.All;
+};
+
+/**
+ * Migrate old tasks to new todo list format
+ * Input: None
+ * Process: Check for old tasks and convert to new format
+ * Output: Array of todo lists
+ */
+export const migrateOldTasks = (): TodoList[] => {
+  if (typeof window !== 'undefined') {
+    const oldTasksKey = 'ai-todo-list-tasks';
+    const oldTasksJson = localStorage.getItem(oldTasksKey);
+    
+    if (oldTasksJson) {
+      try {
+        const oldTasks = JSON.parse(oldTasksJson) as Task[];
+        if (oldTasks.length > 0) {
+          // Create a default todo list with the old tasks
+          const defaultList: TodoList = {
+            id: `list-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            name: 'My Tasks',
+            tasks: oldTasks,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          };
+          
+          // Remove old tasks from localStorage
+          localStorage.removeItem(oldTasksKey);
+          
+          return [defaultList];
+        }
+      } catch (error) {
+        console.error('Failed to migrate old tasks:', error);
+      }
+    }
+  }
+  
+  return [];
 }; 

@@ -11,6 +11,11 @@ Todo:
 
 Core:
 
+* [X] Different to do list
+
+  * [X] Life
+  * [X] Work
+  * [X] Project
 * [ ] AI auto set priority ***
 
   * [ ] 1 most important long term goal
@@ -27,7 +32,8 @@ Core:
 
 Nice to have:
 
-
+- [ ] Remove repetitive U+I and U+I
+- [ ] Also dont have to show the score there for each task. Just show it in the top of each box for each type of task.
 
 **Additional Feature Ideas**
 
@@ -35,7 +41,6 @@ Nice to have:
 * Habit formation elements for recurring tasks
 * Weekly/monthly review prompts to help users reflect on productivity
 * Optional integration with calendar systems
-
 
 ## Features
 
