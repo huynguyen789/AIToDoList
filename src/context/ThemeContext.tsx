@@ -5,7 +5,7 @@
 
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { ThemeState, ThemeAction } from '../types';
-import { loadDarkMode, saveDarkMode } from '../lib/storage';
+import { loadTheme, saveTheme } from '../lib/storage';
 
 // Initial state
 const initialState: ThemeState = {
@@ -50,7 +50,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Load dark mode preference from local storage on initial render
   useEffect(() => {
-    const savedDarkMode = loadDarkMode();
+    const savedDarkMode = loadTheme();
     if (savedDarkMode !== state.darkMode) {
       dispatch({ type: 'TOGGLE_THEME' });
     }
@@ -58,7 +58,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Save dark mode preference to local storage whenever it changes
   useEffect(() => {
-    saveDarkMode(state.darkMode);
+    saveTheme(state.darkMode);
     
     // Apply dark mode class to document
     if (state.darkMode) {

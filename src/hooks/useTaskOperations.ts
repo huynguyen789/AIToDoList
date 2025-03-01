@@ -3,7 +3,7 @@
  * Provides simplified methods for common task operations
  */
 
-import { useTasks } from '../context/TasksContext';
+import { useTasksContext } from '../context/TasksContext';
 import { Task, PriorityLevel, FilterOption, TodoList } from '../types';
 import { createTask } from '../lib/taskUtils';
 
@@ -14,7 +14,7 @@ import { createTask } from '../lib/taskUtils';
  * Output: Methods for task operations and state
  */
 export const useTaskOperations = () => {
-  const { state, dispatch } = useTasks();
+  const { state, dispatch } = useTasksContext();
   
   /**
    * Get active todo list
@@ -192,12 +192,19 @@ export const useTaskOperations = () => {
   const tasks = activeTodoList ? activeTodoList.tasks : [];
   
   return {
-    todoLists: state.todoLists,
-    activeTodoListId: state.activeTodoListId,
-    activeTodoList,
-    tasks,
+    // State
+    tasks: getActiveTodoList()?.tasks.filter(task => {
+      if (state.filter === FilterOption.Active) return !task.completed;
+      if (state.filter === FilterOption.Completed) return task.completed;
+      return true;
+    }) || [],
     filter: state.filter,
     totalScore: state.totalScore,
+    todoLists: state.todoLists,
+    activeTodoList: getActiveTodoList(),
+    loading: state.loading,
+    
+    // Methods
     addTask,
     updateTask,
     deleteTask,

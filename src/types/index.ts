@@ -71,6 +71,7 @@ export interface TasksState {
   activeTodoListId: string | null;
   filter: FilterOption;
   totalScore: number;
+  loading: boolean; // Indicates if data is being loaded
 }
 
 // Task context actions
@@ -86,7 +87,9 @@ export type TasksAction =
   | { type: 'ADD_TODO_LIST'; payload: { name: string } }
   | { type: 'UPDATE_TODO_LIST'; payload: { id: string; name: string } }
   | { type: 'DELETE_TODO_LIST'; payload: string } // todo list id
-  | { type: 'SET_ACTIVE_TODO_LIST'; payload: string }; // todo list id
+  | { type: 'SET_ACTIVE_TODO_LIST'; payload: string } // todo list id
+  | { type: 'SET_LOADING'; payload: boolean } // loading state
+  | { type: 'INITIALIZE_DATA'; payload: { todoLists: TodoList[]; activeTodoListId: string | null; filter: FilterOption } }; // initialize data from storage
 
 // Theme context
 export interface ThemeState {

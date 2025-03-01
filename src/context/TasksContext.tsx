@@ -12,9 +12,11 @@ import {
   saveFilter, 
   loadActiveTodoListId, 
   saveActiveTodoListId,
-  migrateOldTasks
+  migrateOldTasks,
+  migrateLocalDataToFirestore
 } from '../lib/storage';
 import { calculateTotalScore, updateTaskOrders, moveTask, changeTaskPriority } from '../lib/taskUtils';
+import { useAuth } from './AuthContext';
 
 // Initial state
 const initialState: TasksState = {
@@ -22,6 +24,7 @@ const initialState: TasksState = {
   activeTodoListId: null,
   filter: FilterOption.All,
   totalScore: 0,
+  loading: true,
 };
 
 // Create context
@@ -282,6 +285,26 @@ const tasksReducer = (state: TasksState, action: TasksAction): TasksState => {
       };
     }
     
+    case 'SET_LOADING':
+      return {
+        ...state,
+        loading: action.payload,
+      };
+      
+    case 'INITIALIZE_DATA':
+      return {
+        ...state,
+        todoLists: action.payload.todoLists,
+        activeTodoListId: action.payload.activeTodoListId,
+        filter: action.payload.filter,
+        totalScore: calculateTotalScore(
+          action.payload.activeTodoListId 
+            ? action.payload.todoLists.find(list => list.id === action.payload.activeTodoListId)?.tasks || []
+            : []
+        ),
+        loading: false,
+      };
+    
     default:
       return state;
   }
@@ -290,87 +313,63 @@ const tasksReducer = (state: TasksState, action: TasksAction): TasksState => {
 /**
  * Tasks Provider component
  * Input: Children components
- * Process: Provide tasks context to children
- * Output: Context provider with state and dispatch
+ * Process: Manages tasks state and provides context
+ * Output: Context provider with tasks state and dispatch
  */
 export const TasksProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(tasksReducer, initialState);
+  const { user } = useAuth();
   
-  // Load todo lists and preferences from local storage on initial render
+  // Load data from storage on mount and when user changes
   useEffect(() => {
-    // Try to migrate old tasks first
-    const migratedLists = migrateOldTasks();
-    
-    // Load todo lists
-    let todoLists = loadTodoLists();
-    if (migratedLists.length > 0) {
-      todoLists = migratedLists;
-      saveTodoLists(todoLists);
-    }
-    
-    // Create a default list if none exists
-    if (todoLists.length === 0) {
-      const defaultList: TodoList = {
-        id: `list-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        name: 'My Tasks',
-        tasks: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      todoLists = [defaultList];
-    }
-    
-    // Set todo lists
-    todoLists.forEach(todoList => {
-      dispatch({ 
-        type: 'ADD_TODO_LIST', 
-        payload: { name: todoList.name } 
-      });
+    const loadData = async () => {
+      dispatch({ type: 'SET_LOADING', payload: true });
       
-      // Add tasks for each todo list
-      if (todoList.tasks.length > 0) {
-        // Set active todo list before adding tasks
-        dispatch({ 
-          type: 'SET_ACTIVE_TODO_LIST', 
-          payload: todoList.id 
-        });
+      try {
+        // If user is logged in, try to migrate local data to Firestore
+        if (user && user.uid) {
+          await migrateLocalDataToFirestore(user.uid);
+        }
         
-        // Add each task
-        todoList.tasks.forEach(task => {
-          dispatch({ type: 'ADD_TASK', payload: task });
+        // Load data from appropriate storage
+        const todoLists = await loadTodoLists(user?.uid);
+        const activeTodoListId = await loadActiveTodoListId(user?.uid);
+        const filter = await loadFilter(user?.uid);
+        
+        dispatch({
+          type: 'INITIALIZE_DATA',
+          payload: {
+            todoLists,
+            activeTodoListId,
+            filter,
+          },
         });
+      } catch (error) {
+        console.error('Error loading data:', error);
+        dispatch({ type: 'SET_LOADING', payload: false });
       }
-    });
+    };
     
-    // Load active todo list ID
-    const savedActiveTodoListId = loadActiveTodoListId();
-    if (savedActiveTodoListId && todoLists.some(list => list.id === savedActiveTodoListId)) {
-      dispatch({ 
-        type: 'SET_ACTIVE_TODO_LIST', 
-        payload: savedActiveTodoListId 
-      });
-    } else if (todoLists.length > 0) {
-      // Set first list as active if no active list is saved
-      dispatch({ 
-        type: 'SET_ACTIVE_TODO_LIST', 
-        payload: todoLists[0].id 
-      });
-    }
+    loadData();
+  }, [user]);
+  
+  // Save data to storage when state changes
+  useEffect(() => {
+    // Skip saving during initial load
+    if (state.loading) return;
     
-    // Load other preferences
-    dispatch({ type: 'SET_FILTER', payload: loadFilter() });
-    dispatch({ type: 'CALCULATE_SCORE' });
-  }, []);
-  
-  // Save todo lists to local storage whenever they change
-  useEffect(() => {
-    saveTodoLists(state.todoLists);
-  }, [state.todoLists]);
-  
-  // Save active todo list ID whenever it changes
-  useEffect(() => {
-    saveActiveTodoListId(state.activeTodoListId);
-  }, [state.activeTodoListId]);
+    const saveData = async () => {
+      try {
+        await saveTodoLists(state.todoLists, user?.uid);
+        await saveActiveTodoListId(state.activeTodoListId, user?.uid);
+        await saveFilter(state.filter, user?.uid);
+      } catch (error) {
+        console.error('Error saving data:', error);
+      }
+    };
+    
+    saveData();
+  }, [state.todoLists, state.activeTodoListId, state.filter, user]);
   
   return (
     <TasksContext.Provider value={{ state, dispatch }}>
@@ -379,16 +378,5 @@ export const TasksProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   );
 };
 
-/**
- * Hook to access tasks context
- * Input: None
- * Process: Get context
- * Output: Context state and dispatch
- */
-export const useTasks = () => {
-  const context = useContext(TasksContext);
-  if (!context) {
-    throw new Error('useTasks must be used within a TasksProvider');
-  }
-  return context;
-}; 
+// Custom hook to use the tasks context
+export const useTasksContext = () => useContext(TasksContext); 

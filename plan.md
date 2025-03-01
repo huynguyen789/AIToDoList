@@ -16,6 +16,12 @@ Core:
   * [X] Life
   * [X] Work
   * [X] Project
+* [ ] *** Some how i can use on the website: database, log in? (In Progress)
+  * [X] Firebase setup for authentication and database
+  * [X] User authentication UI (login/register)
+  * [X] Database integration for task persistence
+  * [ ] Complete testing and deployment
+
 * [ ] AI auto set priority ***
 
   * [ ] 1 most important long term goal
@@ -32,7 +38,7 @@ Core:
 
 Nice to have:
 
-- [ ] Remove repetitive U+I and U+I
+- [ ] Repetitive U+I and U+I
 - [ ] Also dont have to show the score there for each task. Just show it in the top of each box for each type of task.
 
 **Additional Feature Ideas**

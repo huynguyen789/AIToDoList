@@ -13,6 +13,7 @@ import { TodoListSelector } from '../components/TodoListSelector';
 import { TaskMatrix } from '../components/TaskMatrix';
 import { TasksProvider } from '../context/TasksContext';
 import { ThemeProvider } from '../context/ThemeContext';
+import { AuthProvider } from '../context/AuthContext';
 import { useTaskOperations } from '../hooks/useTaskOperations';
 
 /**
@@ -71,11 +72,13 @@ const AppContent = () => {
 export default function Home() {
   return (
     <ThemeProvider>
-      <TasksProvider>
-        <main className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-          <AppContent />
-        </main>
-      </TasksProvider>
+      <AuthProvider>
+        <TasksProvider>
+          <main className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+            <AppContent />
+          </main>
+        </TasksProvider>
+      </AuthProvider>
     </ThemeProvider>
   );
 } 

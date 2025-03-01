@@ -120,6 +120,14 @@ src/
    - Simplified the layout to make it more intuitive
    - Improved the flow from selecting a list to working with tasks
 
+6. **Added Firebase Integration**
+   - Implemented Firebase authentication (email/password)
+   - Added login and registration UI
+   - Created Firestore database integration for data persistence
+   - Updated storage utilities to use Firestore when user is logged in
+   - Added data migration from local storage to Firestore
+   - Implemented loading states for better UX during data operations
+
 ## Known Issues
 
 - None currently identified 
