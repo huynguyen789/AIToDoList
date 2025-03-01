@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { PriorityLevel, PriorityLabels } from '../types';
+import { PriorityLevel, PriorityLabels, ShortPriorityLabels, PriorityScores } from '../types';
 import { useTaskOperations } from '../hooks/useTaskOperations';
 
 /**
@@ -18,6 +18,7 @@ export const TaskInput: React.FC = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [deadline, setDeadline] = useState('');
+  const [deadlineTime, setDeadlineTime] = useState('');
   const [priority, setPriority] = useState<PriorityLevel>(PriorityLevel.UrgentImportant);
   const [isExpanded, setIsExpanded] = useState(false);
   
@@ -31,12 +32,13 @@ export const TaskInput: React.FC = () => {
     e.preventDefault();
     
     if (title.trim()) {
-      addTask(title, description, deadline, priority);
+      addTask(title, description, deadline, priority, deadlineTime);
       
       // Reset form
       setTitle('');
       setDescription('');
       setDeadline('');
+      setDeadlineTime('');
       setPriority(PriorityLevel.UrgentImportant);
       setIsExpanded(false);
     }
@@ -107,35 +109,57 @@ export const TaskInput: React.FC = () => {
               />
             </div>
             
-            <div className="mb-4">
-              <label htmlFor="deadline" className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
-                Deadline
-              </label>
-              <input
-                id="deadline"
-                type="date"
-                value={deadline}
-                onChange={(e) => setDeadline(e.target.value)}
-                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label htmlFor="deadline" className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+                  Deadline Date
+                </label>
+                <input
+                  id="deadline"
+                  type="date"
+                  value={deadline}
+                  onChange={(e) => setDeadline(e.target.value)}
+                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                />
+              </div>
+              
+              <div>
+                <label htmlFor="deadlineTime" className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+                  Deadline Time
+                </label>
+                <input
+                  id="deadlineTime"
+                  type="time"
+                  value={deadlineTime}
+                  onChange={(e) => setDeadlineTime(e.target.value)}
+                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                />
+              </div>
             </div>
             
             <div className="mb-4">
               <label htmlFor="priority" className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
                 Priority
               </label>
-              <select
-                id="priority"
-                value={priority}
-                onChange={(e) => setPriority(Number(e.target.value) as PriorityLevel)}
-                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              >
+              <div className="grid grid-cols-1 gap-2">
                 {Object.entries(PriorityLabels).map(([value, label]) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setPriority(Number(value) as PriorityLevel)}
+                    className={`py-2 px-3 rounded-md text-sm font-medium transition-colors flex justify-between items-center ${
+                      Number(value) === priority
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
+                    }`}
+                  >
+                    <span>{label}</span>
+                    <span className="text-xs font-normal ml-2">
+                      ({ShortPriorityLabels[Number(value) as PriorityLevel]} - {PriorityScores[Number(value) as PriorityLevel]} points)
+                    </span>
+                  </button>
                 ))}
-              </select>
+              </div>
             </div>
             
             <div className="flex justify-between">

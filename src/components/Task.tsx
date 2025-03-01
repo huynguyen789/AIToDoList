@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { Task as TaskType, PriorityLevel, PriorityLabels, PriorityScores } from '../types';
+import { Task as TaskType, PriorityLevel, PriorityLabels, PriorityScores, ShortPriorityLabels } from '../types';
 import { useTaskOperations } from '../hooks/useTaskOperations';
 
 interface TaskProps {
@@ -23,6 +23,7 @@ export const Task: React.FC<TaskProps> = ({ task }) => {
   const [editedTitle, setEditedTitle] = useState(task.title);
   const [editedDescription, setEditedDescription] = useState(task.description || '');
   const [editedDeadline, setEditedDeadline] = useState(task.deadline || '');
+  const [editedDeadlineTime, setEditedDeadlineTime] = useState(task.deadlineTime || '');
   const [editedPriority, setEditedPriority] = useState(task.priority);
   
   /**
@@ -70,6 +71,7 @@ export const Task: React.FC<TaskProps> = ({ task }) => {
         title: editedTitle,
         description: editedDescription,
         deadline: editedDeadline,
+        deadlineTime: editedDeadlineTime,
         priority: editedPriority,
       });
       setIsEditing(false);
@@ -86,6 +88,7 @@ export const Task: React.FC<TaskProps> = ({ task }) => {
     setEditedTitle(task.title);
     setEditedDescription(task.description || '');
     setEditedDeadline(task.deadline || '');
+    setEditedDeadlineTime(task.deadlineTime || '');
     setEditedPriority(task.priority);
     setIsEditing(false);
   };
@@ -100,6 +103,24 @@ export const Task: React.FC<TaskProps> = ({ task }) => {
     if (!dateString) return '';
     const date = new Date(dateString);
     return date.toLocaleDateString();
+  };
+  
+  /**
+   * Format deadline for display
+   * Input: Date string and time string
+   * Process: Combine and format for display
+   * Output: Formatted deadline string
+   */
+  const formatDeadline = (dateString?: string, timeString?: string) => {
+    if (!dateString) return '';
+    
+    let result = formatDate(dateString);
+    
+    if (timeString) {
+      result += ` at ${timeString}`;
+    }
+    
+    return result;
   };
   
   // Priority badge color classes
@@ -140,29 +161,49 @@ export const Task: React.FC<TaskProps> = ({ task }) => {
             />
           </div>
           
-          <div>
-            <label className="block text-sm font-medium mb-1">Deadline</label>
-            <input
-              type="date"
-              value={editedDeadline}
-              onChange={(e) => setEditedDeadline(e.target.value)}
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Deadline Date</label>
+              <input
+                type="date"
+                value={editedDeadline}
+                onChange={(e) => setEditedDeadline(e.target.value)}
+                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium mb-1">Deadline Time</label>
+              <input
+                type="time"
+                value={editedDeadlineTime}
+                onChange={(e) => setEditedDeadlineTime(e.target.value)}
+                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600"
+              />
+            </div>
           </div>
           
           <div>
             <label className="block text-sm font-medium mb-1">Priority</label>
-            <select
-              value={editedPriority}
-              onChange={(e) => setEditedPriority(Number(e.target.value) as PriorityLevel)}
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600"
-            >
+            <div className="grid grid-cols-1 gap-2">
               {Object.entries(PriorityLabels).map(([priority, label]) => (
-                <option key={priority} value={priority}>
-                  {label} (Score: {PriorityScores[priority as unknown as PriorityLevel]})
-                </option>
+                <button
+                  key={priority}
+                  type="button"
+                  onClick={() => setEditedPriority(Number(priority) as PriorityLevel)}
+                  className={`py-2 px-3 rounded-md text-sm font-medium transition-colors flex justify-between items-center ${
+                    Number(priority) === editedPriority
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
+                  }`}
+                >
+                  <span>{label}</span>
+                  <span className="text-xs font-normal ml-2">
+                    ({ShortPriorityLabels[Number(priority) as PriorityLevel]} - {PriorityScores[Number(priority) as PriorityLevel]} points)
+                  </span>
+                </button>
               ))}
-            </select>
+            </div>
           </div>
           
           <div className="flex space-x-2 mt-4">
@@ -199,12 +240,12 @@ export const Task: React.FC<TaskProps> = ({ task }) => {
                 
                 <div className="flex items-center space-x-2 mt-1">
                   <span className={`text-xs px-2 py-1 rounded-full text-white ${priorityColors[task.priority]}`}>
-                    {PriorityLabels[task.priority]}
+                    {ShortPriorityLabels[task.priority]}
                   </span>
                   
                   {task.deadline && (
                     <span className="text-xs text-gray-500 dark:text-gray-400">
-                      Due: {formatDate(task.deadline)}
+                      Due: {formatDeadline(task.deadline, task.deadlineTime)}
                     </span>
                   )}
                   
@@ -268,7 +309,7 @@ export const Task: React.FC<TaskProps> = ({ task }) => {
                       : 'bg-gray-200 text-gray-700 dark:bg-gray-600 dark:text-gray-300'
                   }`}
                 >
-                  {label}
+                  {ShortPriorityLabels[Number(priority) as PriorityLevel]}
                 </button>
               ))}
             </div>

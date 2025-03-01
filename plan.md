@@ -6,9 +6,8 @@ A modern todo list application with AI features, priority management based on th
 
 Todo:
 
-* Add time deadline on the task
-
-The change pirority: it's a big long and not nice. Think of some way to make it nicely and shorter.
+* [X] Add time deadline on the task
+* [X] The change pirority: it's a big long and not nice. Think of some way to make it nicely and shorter.
 
 ## Features
 

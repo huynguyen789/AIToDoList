@@ -18,7 +18,7 @@ export const useTaskOperations = () => {
   
   /**
    * Add a new task
-   * Input: Title, description, deadline, priority
+   * Input: Title, description, deadline, priority, deadlineTime
    * Process: Create and dispatch new task
    * Output: None
    */
@@ -26,7 +26,8 @@ export const useTaskOperations = () => {
     title: string,
     description?: string,
     deadline?: string,
-    priority: PriorityLevel = PriorityLevel.UrgentImportant
+    priority: PriorityLevel = PriorityLevel.UrgentImportant,
+    deadlineTime?: string
   ) => {
     if (!title.trim()) return;
     
@@ -38,6 +39,10 @@ export const useTaskOperations = () => {
     
     if (deadline) {
       newTask.deadline = deadline;
+    }
+    
+    if (deadlineTime) {
+      newTask.deadlineTime = deadlineTime;
     }
     
     dispatch({ type: 'ADD_TASK', payload: newTask });
